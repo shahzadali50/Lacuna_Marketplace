@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import Sidebar from "@/components/admin/Sidebar.vue";
-import { Head,Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { useFlashMessages } from '@/composables/useFlashMessages';
+import { router } from '@inertiajs/vue3'
+import {
+    FilterOutlined
+} from '@ant-design/icons-vue';
 useFlashMessages();
-
 // State for sidebar
 const isMobile = ref(window.innerWidth <= 992);
 const collapsed = ref(isMobile.value);
@@ -14,14 +17,12 @@ const handleResize = () => {
     isMobile.value = window.innerWidth <= 992;
     collapsed.value = isMobile.value;
 };
-
 // Close sidebar when clicking outside (on mobile)
 const closeSidebar = (event: MouseEvent) => {
     if (isMobile.value && !event.target.closest('.sidebar, .trigger')) {
         collapsed.value = true;
     }
 };
-
 // Add event listeners
 onMounted(() => {
     window.addEventListener("resize", handleResize);
@@ -33,6 +34,14 @@ onBeforeUnmount(() => {
     window.removeEventListener("resize", handleResize);
     document.removeEventListener("click", closeSidebar);
 });
+const clearCache = () => {
+  router.visit(route('user.cache.clear'), {
+    method: 'get',
+    preserveScroll: true,
+    preserveState: true,
+  });
+};
+
 </script>
 
 <template>
@@ -50,15 +59,12 @@ onBeforeUnmount(() => {
         <a-layout :style="{ height: '100vh', marginLeft: isMobile ? '0' : collapsed ? '0' : '200px' }">
             <!-- Header -->
             <a-layout-header class="header">
-                <div class="trigger-button">
+                <div class="trigger-button mr-2">
                     <i class="fa trigger" :class="collapsed ? 'fa-arrow-right' : 'fa-arrow-left'"
                         @click.stop="collapsed = !collapsed"></i>
                 </div>
-                <Link :href="route('user.cache.clear')"
-                  >
-                <span>optmize</span>
-                </Link>
-               
+                <a-button  @click="clearCache"  type="dashed" danger> <FilterOutlined />Clear Cache</a-button>
+
             </a-layout-header>
 
             <!-- Content -->

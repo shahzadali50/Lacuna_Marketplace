@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\App;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -21,6 +22,8 @@ class AuthenticatedSessionController extends Controller
         return Inertia::render('auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => $request->session()->get('status'),
+            'translations' => __('messages'),
+            'currentLocale' => App::getLocale(),
         ]);
     }
 

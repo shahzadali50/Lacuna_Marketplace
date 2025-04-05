@@ -13,6 +13,13 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+Route::get('/lang/{locale}', function ($locale) {
+    if (in_array($locale, ['en', 'pt', 'jp'])) {
+        session(['locale' => $locale]);
+    }
+    return redirect()->back();
+})->name('lang.switch');
+
 Route::middleware(['auth', 'user', 'verified'])->name('user.')->group(function () {
     Route::get('cache-clear', [MainController::class, 'cacheClear'])->name('cache.clear');
     Route::get('user/dashboard', [MainController::class, 'dashboard'])->name('dashboard');

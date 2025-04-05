@@ -18,10 +18,13 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,
+            \App\Http\Middleware\SetLocale::class,
         ]);
         $middleware->alias([
             'admin' => AdminMiddleware::class,
             'user' => \App\Http\Middleware\UserMiddleware::class,
+            'setlocale' => \App\Http\Middleware\SetLocale::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

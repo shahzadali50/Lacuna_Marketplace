@@ -15,19 +15,20 @@ use Illuminate\Support\Facades\Log;
 class MainController extends Controller
 {
 
-    public function cacheClear(){
-        try {
-            // Run the Artisan command to clear caches
-            Artisan::call('optimize:clear');
-            // Return success message using Inertia flash data
-            Log::info('Application cache cleared successfully!');
-            return redirect()->back()->with('success', 'Application cache cleared successfully!');
-        } catch (\Exception $e) {
-            Log::error('Cache clear error: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
-        }
+        public function cacheClear(){
+            try {
+                // Run the Artisan command to clear caches
+                Artisan::call('optimize:clear');
+                // Return success message using Inertia flash data
+                Log::info('Application cache cleared successfully!');
+                return redirect()->back()->with('success', 'Application cache cleared successfully!');
 
-    }
+            } catch (\Exception $e) {
+                Log::error('Cache clear error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+            }
+
+        }
     public function checkRole(){
         if (auth()->check()) {
             if (auth()->user()->role == "user") {

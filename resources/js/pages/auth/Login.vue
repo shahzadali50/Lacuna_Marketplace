@@ -6,14 +6,14 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm ,usePage} from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
 
 defineProps<{
     status?: string;
     canResetPassword: boolean;
 }>();
-
+const { props } = usePage()
 const form = useForm({
     email: '',
     password: '',
@@ -30,6 +30,15 @@ const submit = () => {
 <template>
     <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
         <Head title="Log in" />
+        <nav class="mb-4">
+      <a href="/lang/en">EN</a> |
+      <a href="/lang/pt">PT</a> |
+      <a href="/lang/jp">JP</a>
+    </nav>
+    <p class="text-sm text-muted-foreground">Current language: {{ props.locale }}</p>
+    <p>{{ props.translations.email }}</p>
+    ================
+    <p>{{ props.translations.welcome }}</p>
 
         <div v-if="status" class="mb-4 text-center text-sm font-medium text-green-600">
             {{ status }}
