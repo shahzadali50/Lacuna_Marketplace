@@ -45,8 +45,8 @@ class HandleInertiaRequests extends Middleware
             'auth' => [
                 'user' => $request->user(),
             ],
-            'translations' => __('messages'), // ✅ Now available globally
-            'locale' => app()->getLocale(),   // Optional: send current locale
+            'translations' => __('messages'), // ✅ will now be globally available
+            'currentLocale' => app()->getLocale(),
 
 
 

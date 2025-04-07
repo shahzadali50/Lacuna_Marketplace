@@ -4,8 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+
+const { props } = usePage();
 
 const form = useForm({
     password: '',
@@ -21,13 +23,13 @@ const submit = () => {
 </script>
 
 <template>
-    <AuthLayout title="Confirm your password" description="This is a secure area of the application. Please confirm your password before continuing.">
-        <Head title="Confirm password" />
+    <AuthLayout :title="props.translations.confirm_password" :description="props.translations.secure_area">
+        <Head :title="props.translations.confirm_password" />
 
         <form @submit.prevent="submit">
             <div class="space-y-6">
                 <div class="grid gap-2">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{{ props.translations.password }}</Label>
                     <Input
                         id="password"
                         type="password"
@@ -36,6 +38,7 @@ const submit = () => {
                         required
                         autocomplete="current-password"
                         autofocus
+                        :placeholder="props.translations.password_placeholder"
                     />
 
                     <InputError :message="form.errors.password" />
@@ -44,7 +47,7 @@ const submit = () => {
                 <div class="flex items-center">
                     <Button class="w-full" :disabled="form.processing">
                         <LoaderCircle v-if="form.processing" class="h-4 w-4 animate-spin" />
-                        Confirm Password
+                        {{ props.translations.confirm_password }}
                     </Button>
                 </div>
             </div>
