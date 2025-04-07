@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\App;
 
 class ConfirmablePasswordController extends Controller
 {
@@ -17,7 +18,10 @@ class ConfirmablePasswordController extends Controller
      */
     public function show(): Response
     {
-        return Inertia::render('auth/ConfirmPassword');
+        return Inertia::render('auth/ConfirmPassword', [
+            'translations' => __('auth'),
+            'currentLocale' => App::getLocale(),
+        ]);
     }
 
     /**

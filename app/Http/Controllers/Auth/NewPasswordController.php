@@ -13,6 +13,7 @@ use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\App;
 
 class NewPasswordController extends Controller
 {
@@ -24,6 +25,8 @@ class NewPasswordController extends Controller
         return Inertia::render('auth/ResetPassword', [
             'email' => $request->email,
             'token' => $request->route('token'),
+            'translations' => __('auth'),
+            'currentLocale' => App::getLocale(),
         ]);
     }
 

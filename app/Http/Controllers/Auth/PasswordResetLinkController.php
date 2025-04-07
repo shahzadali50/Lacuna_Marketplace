@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\App;
 
 class PasswordResetLinkController extends Controller
 {
@@ -18,6 +19,8 @@ class PasswordResetLinkController extends Controller
     {
         return Inertia::render('auth/ForgotPassword', [
             'status' => $request->session()->get('status'),
+            'translations' => __('auth'),
+            'currentLocale' => App::getLocale(),
         ]);
     }
 

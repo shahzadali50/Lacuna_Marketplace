@@ -7,6 +7,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\App;
 
 class EmailVerificationPromptController extends Controller
 {
@@ -17,6 +18,10 @@ class EmailVerificationPromptController extends Controller
     {
         return $request->user()->hasVerifiedEmail()
                     ? redirect()->intended(route('dashboard', absolute: false))
-                    : Inertia::render('auth/VerifyEmail', ['status' => $request->session()->get('status')]);
+                    : Inertia::render('auth/VerifyEmail', [
+                        'status' => $request->session()->get('status'),
+                        'translations' => __('auth'),
+                        'currentLocale' => App::getLocale(),
+                    ]);
     }
 }
