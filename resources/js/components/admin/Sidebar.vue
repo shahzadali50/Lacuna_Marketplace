@@ -2,7 +2,7 @@
 import { ref, watch, computed, defineProps } from 'vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
-    UserOutlined,
+    SettingOutlined,
     DatabaseOutlined,
     AppstoreOutlined,
     TrademarkCircleOutlined,
@@ -27,7 +27,7 @@ watch(currentPath, (newUrl) => {
 <template>
     <a-layout-sider :collapsed="collapsed" :trigger="null" collapsible>
         <div class="logo">
-            <h3 class="mb-0" v-if="!collapsed">POS Application</h3>
+            <h3 class="mb-0" v-if="!collapsed">LaCuna-Marketplace</h3>
         </div>
         <div class="scrollbar" id="style-2">
         <a-menu v-model:selectedKeys="selectedKeys" class="force-overflow">
@@ -99,8 +99,8 @@ watch(currentPath, (newUrl) => {
             <a-menu-item key="8"  :class="{ 'active': currentPath.startsWith(route('profile.edit', {}, false)) }">
                 <Link :href="route('profile.edit')"
                    >
-                <UserOutlined />
-                <span>Profile</span>
+                   <SettingOutlined />
+                <span>Setting</span>
                 </Link>
             </a-menu-item>
         </a-menu>

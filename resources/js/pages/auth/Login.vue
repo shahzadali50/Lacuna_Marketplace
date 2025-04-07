@@ -8,6 +8,24 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm ,usePage} from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import { router } from '@inertiajs/vue3'
+
+// Language map (key => locale)
+const languageMap = {
+  1: 'en',
+  2: 'pt',
+  3: 'jp',
+}
+
+const handleMenuClick = (info: { key: string }) => {
+  const locale = languageMap[info.key]
+  if (locale) {
+    router.visit(`/lang/${locale}`, {
+      method: 'get',
+
+    })
+  }
+}
 
 defineProps<{
     status?: string;
@@ -30,6 +48,19 @@ const submit = () => {
 <template>
     <AuthBase title="Log in to your account" description="Enter your email and password below to log in">
         <Head title="Log in" />
+        <a-dropdown>
+                <template #overlay>
+                <a-menu @click="handleMenuClick">
+
+                    <a-menu-item key="1">EN</a-menu-item>
+                    <a-menu-item key="2">PT</a-menu-item>
+                    <a-menu-item key="3">JP</a-menu-item>
+                </a-menu>
+                </template>
+                <a-button>
+                Select Language <DownOutlined />
+                </a-button>
+            </a-dropdown>
         <nav class="mb-4">
       <a href="/lang/en">EN</a> |
       <a href="/lang/pt">PT</a> |

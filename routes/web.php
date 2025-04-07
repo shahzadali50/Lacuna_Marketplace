@@ -1,6 +1,7 @@
 <?php
 
 use Inertia\Inertia;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\BrandController;
@@ -10,7 +11,12 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PurchaseProductController;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome');
+    return Inertia::render('frontend/Index', [
+        'title' => 'Home',
+        'description' => 'Welcome to our website!',
+        'translations' => __('messages'),
+        'locale' => App::getLocale(),
+    ]);
 })->name('home');
 
 Route::get('/lang/{locale}', function ($locale) {
