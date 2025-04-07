@@ -9,6 +9,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PurchaseProductController;
+use App\Http\Controllers\SeoController;
 
 Route::get('/', function () {
     return Inertia::render('frontend/Index', [
@@ -25,6 +26,23 @@ Route::get('/lang/{locale}', function ($locale) {
     }
     return redirect()->back();
 })->name('lang.switch');
+
+// SEO Routes
+Route::get('/sitemap.xml', function () {
+    return response()->file(public_path('sitemap.xml'));
+})->name('sitemap');
+
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/seo', function () {
+        return Inertia::render('admin/Seo', [
+            'success' => session('success'),
+            'error' => session('error'),
+        ]);
+    })->name('seo.index');
+    
+    Route::get('/seo/generate-sitemap', [SeoController::class, 'generateAndSubmitSitemap'])->name('seo.generate-sitemap');
+    Route::post('/seo/add-meta-tags', [SeoController::class, 'addMetaTags'])->name('seo.add-meta-tags');
+});
 
 Route::middleware(['auth', 'user', 'verified'])->name('user.')->group(function () {
     Route::get('cache-clear', [MainController::class, 'cacheClear'])->name('cache.clear');
