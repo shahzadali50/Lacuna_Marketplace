@@ -44,4 +44,20 @@ return [
     'verify_email_message' => 'Obrigado por se cadastrar! Antes de começar, você poderia verificar seu endereço de e-mail clicando no link que acabamos de enviar para você? Se você não recebeu o e-mail, teremos prazer em enviar outro.',
     'resend_verification_email' => 'Reenviar e-mail de verificação',
     'logout' => 'Sair',
+
+    'banner' => [
+        'title' => 'LaCuna Marketplace - Elevando o Comércio Global',
+        'subtitle' => 'Experimente o comércio transfronteiriço premium com vendedores verificados e produtos curados de todo o mundo.',
+        'cta_text' => 'Explorar Coleção',
+    ],
+
+    'products' => [
+        'title' => 'Produtos em Destaque',
+        'subtitle' => 'Descubra nossa seleção cuidadosamente escolhida de produtos premium de vendedores confiáveis em todo o mundo.',
+        'view_all' => 'Ver Detalhes',
+        'price' => 'Preço',
+        'rating' => 'Avaliação',
+        'seller' => 'Vendedor',
+        'category' => 'Categoria',
+    ],
 ];

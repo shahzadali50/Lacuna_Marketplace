@@ -1,24 +1,42 @@
 <script setup lang="ts">
-
 import UserLayout from '@/layouts/UserLayout.vue';
 import { Head } from '@inertiajs/vue3';
+import BannerSection from '@/Components/frontend/BannerSection.vue';
+import ProductSection from '@/Components/frontend/ProductSection.vue';
+import { usePage } from '@inertiajs/vue3';
 
+interface PageProps extends Record<string, any> {
+  translations: {
+    banner: {
+      title: string;
+      subtitle: string;
+      cta_text: string;
+    };
+    products: {
+      title: string;
+      subtitle: string;
+      view_all: string;
+      price: string;
+      rating: string;
+      seller: string;
+      category: string;
+    };
+  };
+}
 
-
+const page = usePage<PageProps>();
 </script>
 
 <template>
-    <UserLayout>
+  <UserLayout>
     <Head title="Welcome" />
-    <section>
-    <div class="container">
-    <h1 class="text-2xl font-bold">Welcome to Home Page</h1>
-
-
-    </div>
-
-
-    </section>
-
-    </UserLayout>
+    <BannerSection
+      :title="page.props.translations.banner.title"
+      :subtitle="page.props.translations.banner.subtitle"
+      :cta-text="page.props.translations.banner.cta_text"
+      cta-link="/marketplace"
+      logo-path="assets/images/banner.jpg"
+    />
+    <ProductSection />
+  </UserLayout>
 </template>

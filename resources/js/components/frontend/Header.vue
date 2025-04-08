@@ -88,7 +88,7 @@
                                             </Link>
                                         </a-menu-item>
                                         <a-menu-item key="register">
-                                            <Link :href="route('register')" class="text-gray-600 hover:text-gray-900">  
+                                            <Link :href="route('register')" class="text-gray-600 hover:text-gray-900">
                                             Register
                                             </Link>
                                         </a-menu-item>
@@ -154,7 +154,7 @@
     </a-drawer>
 
     <!-- Mobile Bottom Navigation -->
-    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200">
+    <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
         <div class="flex justify-around items-center h-16">
 
             <a href="/" class="flex flex-col items-center">

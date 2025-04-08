@@ -44,5 +44,21 @@ return [
     'verify_email_message' => 'Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.',
     'resend_verification_email' => 'Resend verification email',
     'logout' => 'Log out',
+
+    'banner' => [
+        'title' => 'LaCuna Marketplace - Elevating Global Commerce',
+        'subtitle' => 'Experience premium cross-border trading with verified sellers and curated products from around the world.',
+        'cta_text' => 'Explore Collection',
+    ],
+
+    'products' => [
+        'title' => 'Featured Products',
+        'subtitle' => 'Discover our handpicked selection of premium products from trusted sellers worldwide.',
+        'view_all' => 'View Details',
+        'price' => 'Price',
+        'rating' => 'Rating',
+        'seller' => 'Seller',
+        'category' => 'Category',
+    ],
 ];
 
