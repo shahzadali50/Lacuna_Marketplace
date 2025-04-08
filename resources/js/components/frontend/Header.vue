@@ -83,10 +83,14 @@
                                 <template #overlay>
                                     <a-menu>
                                         <a-menu-item key="login">
-                                            <a href="/login">Login</a>
+                                            <Link :href="route('login')" class="text-gray-600 hover:text-gray-900">
+                                            Login
+                                            </Link>
                                         </a-menu-item>
                                         <a-menu-item key="register">
-                                            <a href="/register">Register</a>
+                                            <Link :href="route('register')" class="text-gray-600 hover:text-gray-900">  
+                                            Register
+                                            </Link>
                                         </a-menu-item>
                                     </a-menu>
                                 </template>
