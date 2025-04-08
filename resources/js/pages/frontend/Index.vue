@@ -1,9 +1,15 @@
 <script setup lang="ts">
+<<<<<<< HEAD
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3'
 import { DownOutlined } from '@ant-design/icons-vue'
 import { usePage} from '@inertiajs/vue3';
 const { props } = usePage()
+=======
+import { Head, Link } from "@inertiajs/vue3";
+import { usePage } from "@inertiajs/vue3";
+import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+>>>>>>> 8e1a82d (implement the Eng | Português | 日本語  langauge accurate)
 
 // Language map (key => locale)
 const languageMap = {
