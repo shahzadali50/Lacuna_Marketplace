@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { router, usePage } from '@inertiajs/vue3';
-import { DownOutlined, GlobalOutlined } from '@ant-design/icons-vue';
+import {  GlobalOutlined } from '@ant-design/icons-vue';
 import { MenuProps } from 'ant-design-vue';
 
 const { props } = usePage();
@@ -43,7 +43,7 @@ const handleMenuClick: MenuProps['onClick'] = (info) => {
 
   <a-button
     type="text"
-    class="flex items-center gap-1 focus:outline-none hover:bg-transparent"
+    class="flex items-center gap-1 focus:outline-none hover:bg-transparent mt-1"
     aria-label="Select language"
   >
     <GlobalOutlined />
