@@ -15,7 +15,7 @@ const languageMap = {
 const handleMenuClick = (info: { key: string }) => {
   const locale = languageMap[info.key]
   if (locale) {
-    router.visit(`/lang/${locale}`, {
+    router.visit(route('language.switch', { locale }), {
       method: 'get',
     })
   }
@@ -47,7 +47,7 @@ const handleMenuClick = (info: { key: string }) => {
                     </Link>
 
                 </template>
-                <a href="/lang/jp">JP</a>
+                <a :href="route('language.switch', { locale: 'jp' })">JP</a>
                 <a-dropdown>
                 <template #overlay>
                 <a-menu @click="handleMenuClick">

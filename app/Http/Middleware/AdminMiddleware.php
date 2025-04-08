@@ -15,10 +15,9 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== 'admin') {
-            return redirect()->route('home')->with('error', 'Unauthorized access.');
+        if (auth()->check() && auth()->user()->role === 'admin') {
+            return $next($request);
         }
-
-        return $next($request);
+        return redirect()->route('login')->with('error', 'Access denied.');
     }
 }

@@ -1,21 +1,2 @@
 User-agent: *
-Allow: /
-Allow: /sitemap.xml
-Allow: /products
-Allow: /categories
-Allow: /brands
-
-# Disallow admin and authentication routes
-Disallow: /admin/
-Disallow: /login
-Disallow: /register
-Disallow: /forgot-password
-Disallow: /reset-password
-Disallow: /email/verify
-Disallow: /confirm-password
-Disallow: /dashboard
-Disallow: /user/
-Disallow: /settings/
-
-# Sitemap location
-Sitemap: https://yourdomain.com/sitemap.xml
+Disallow:

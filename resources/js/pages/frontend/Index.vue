@@ -1,15 +1,9 @@
 <script setup lang="ts">
-<<<<<<< HEAD
 import { Head, Link } from '@inertiajs/vue3';
 import { router } from '@inertiajs/vue3'
 import { DownOutlined } from '@ant-design/icons-vue'
 import { usePage} from '@inertiajs/vue3';
 const { props } = usePage()
-=======
-import { Head, Link } from "@inertiajs/vue3";
-import { usePage } from "@inertiajs/vue3";
-import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
->>>>>>> 8e1a82d (implement the Eng | Português | 日本語  langauge accurate)
 
 // Language map (key => locale)
 const languageMap = {
@@ -21,7 +15,7 @@ const languageMap = {
 const handleMenuClick = (info: { key: string }) => {
   const locale = languageMap[info.key]
   if (locale) {
-    router.visit(`/lang/${locale}`, {
+    router.visit(route('language.switch', { locale }), {
       method: 'get',
     })
   }
@@ -53,7 +47,7 @@ const handleMenuClick = (info: { key: string }) => {
                     </Link>
 
                 </template>
-                <a href="/lang/jp">JP</a>
+                <a :href="route('language.switch', { locale: 'jp' })">JP</a>
                 <a-dropdown>
                 <template #overlay>
                 <a-menu @click="handleMenuClick">
