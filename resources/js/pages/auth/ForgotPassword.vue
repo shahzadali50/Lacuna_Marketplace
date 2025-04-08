@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-
+import UserLayout from '@/layouts/UserLayout.vue';
 defineProps<{
     status?: string;
 }>();
@@ -24,6 +24,8 @@ const submit = () => {
 </script>
 
 <template>
+
+    <UserLayout>
     <AuthLayout :title="props.translations.forgot_password" :description="props.translations.enter_email_reset">
         <Head :title="props.translations.forgot_password" />
 
@@ -53,4 +55,5 @@ const submit = () => {
             </div>
         </div>
     </AuthLayout>
+    </UserLayout>
 </template>

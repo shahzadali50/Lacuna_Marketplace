@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
+import UserLayout from '@/layouts/UserLayout.vue';
 
 const { props } = usePage();
 
@@ -25,6 +26,7 @@ const submit = () => {
 </script>
 
 <template>
+    <UserLayout>
     <AuthBase :title="props.translations.create_account" :description="props.translations.enter_details">
         <Head :title="props.translations.register" />
 
@@ -82,4 +84,5 @@ const submit = () => {
             </div>
         </form>
     </AuthBase>
+    </UserLayout>
 </template>

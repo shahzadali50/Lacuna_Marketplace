@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-
+import UserLayout from '@/layouts/UserLayout.vue';
 const { props } = usePage();
 
 const form = useForm({
@@ -23,6 +23,7 @@ const submit = () => {
 </script>
 
 <template>
+    <UserLayout>
     <AuthLayout :title="props.translations.confirm_password" :description="props.translations.secure_area">
         <Head :title="props.translations.confirm_password" />
 
@@ -53,4 +54,5 @@ const submit = () => {
             </div>
         </form>
     </AuthLayout>
+    </UserLayout>
 </template>

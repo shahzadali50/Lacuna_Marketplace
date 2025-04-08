@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-
+import UserLayout from '@/layouts/UserLayout.vue';
 defineProps<{
     status?: string;
 }>();
@@ -19,6 +19,7 @@ const submit = () => {
 </script>
 
 <template>
+        <UserLayout>
     <AuthLayout :title="props.translations.verify_email" :description="props.translations.verify_email_description">
         <Head :title="props.translations.email_verification" />
 
@@ -35,4 +36,5 @@ const submit = () => {
             <TextLink :href="route('logout')" method="post" as="button" class="mx-auto block text-sm"> {{ props.translations.logout }} </TextLink>
         </form>
     </AuthLayout>
+    </UserLayout>
 </template>

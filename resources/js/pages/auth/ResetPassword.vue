@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { LoaderCircle } from 'lucide-vue-next';
-
+import UserLayout from '@/layouts/UserLayout.vue';
 interface Props {
     token: string;
     email: string;
@@ -32,6 +32,7 @@ const submit = () => {
 </script>
 
 <template>
+    <UserLayout>
     <AuthLayout :title="pageProps.translations.reset_password" :description="pageProps.translations.enter_new_password">
         <Head :title="pageProps.translations.reset_password" />
 
@@ -79,4 +80,5 @@ const submit = () => {
             </div>
         </form>
     </AuthLayout>
+    </UserLayout>
 </template>
