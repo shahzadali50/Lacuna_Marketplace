@@ -28,23 +28,28 @@ const handleMenuClick: MenuProps['onClick'] = (info) => {
 </script>
 
 <template>
-  <a-dropdown>
-    <template #overlay>
-      <a-menu @click="handleMenuClick">
-        <a-menu-item
-          v-for="locale in availableLocales"
-          :key="locale.code"
-          :class="{ 'bg-gray-100': locale.code === props.currentLocale }"
-        >
-          {{ locale.name }}
-        </a-menu-item>
-      </a-menu>
-    </template>
+<a-dropdown>
+  <template #overlay>
+    <a-menu @click="handleMenuClick">
+      <a-menu-item
+        v-for="locale in availableLocales"
+        :key="locale.code"
+        :class="{ 'bg-gray-100': locale.code === props.currentLocale }"
+      >
+        {{ locale.name }}
+      </a-menu-item>
+    </a-menu>
+  </template>
 
-    <a-button class="flex items-center gap-1" aria-label="Select language">
-      <GlobalOutlined />
-      <span class="uppercase">{{ props.currentLocale }}</span>
-      <DownOutlined />
-    </a-button>
-  </a-dropdown>
+  <a-button
+    type="text"
+    class="flex items-center gap-1 focus:outline-none hover:bg-transparent"
+    aria-label="Select language"
+  >
+    <GlobalOutlined />
+    <!-- <span class="uppercase">{{ props.currentLocale }}</span> -->
+    <!-- <DownOutlined /> -->
+  </a-button>
+</a-dropdown>
+
 </template>

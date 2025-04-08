@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { Head, Link } from "@inertiajs/vue3";
+
 import { usePage } from "@inertiajs/vue3";
 import LanguageSwitcher from '@/components/LanguageSwitcher.vue';
+import Header from '@/components/frontend/Header.vue';
 
 const { props } = usePage();
 </script>
@@ -15,6 +17,7 @@ const { props } = usePage();
   <div
     class="flex min-h-screen flex-col items-center bg-[#FDFDFC] p-6 text-[#1b1b18] dark:bg-[#0a0a0a] lg:justify-center lg:p-8"
   >
+  <Header/>
     <header class="not-has-[nav]:hidden mb-6 w-full max-w-[335px] text-sm lg:max-w-4xl">
       <nav class="flex items-center justify-end gap-4">
         <Link
