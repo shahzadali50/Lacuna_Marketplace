@@ -26,6 +26,7 @@ class AppServiceProvider extends ServiceProvider
                     'success' => session('success'),
                     'error' => session('error'),
                 ];
+
             },
         ]);
     }
