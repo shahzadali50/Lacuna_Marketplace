@@ -12,7 +12,7 @@ defineProps<{
 </script>
 
 <template>
-    <section class=" bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300">
+    <section class=" bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300  py-14">
 
         <div class="container mx-auto">
             <a-row :gutter="[16, 16]" class="flex items-center">

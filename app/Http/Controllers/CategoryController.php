@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Storage;
 
 
 class CategoryController extends Controller
@@ -20,7 +21,7 @@ class CategoryController extends Controller
     {
         $categories= Category::where('user_id', Auth::id())
         ->orderBy('created_at', 'desc')
-        ->paginate(10);
+        ->paginate(5);
         return Inertia::render('admin/category/Index', compact('categories'));
     }
     public function store(Request $request)
@@ -30,16 +31,32 @@ class CategoryController extends Controller
                 'required', 'string', 'max:255',
                 Rule::unique('categories', 'name')->where('user_id', Auth::id()) ->whereNull('deleted_at'),
             ],
-            'description' => 'nullable|string',
+            'description' => 'required|string',
+            'image' => [
+                'required',
+                'image',
+                'mimes:jpeg,png,jpg,webp',
+                'max:2048',
+            ],
         ]);
 
         DB::beginTransaction();
         try {
+            // Get the original file name and extension
+            $originalName = $request->file('image')->getClientOriginalName();
+
+            // Create a unique filename by adding a small random string to prevent conflicts
+            $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+
+            // Store the file with the custom filename
+            $imagePath = $request->file('image')->storeAs('categories', $filename, 'public');
+
             $category = Category::create([
                 'user_id' => Auth::id(),
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
+                'image' => $imagePath,
             ]);
 
             if ($category) {
@@ -99,6 +116,7 @@ class CategoryController extends Controller
                     ->ignore($id),
             ],
             'description' => 'nullable|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
         $category = Category::find($id);
 
@@ -109,11 +127,31 @@ class CategoryController extends Controller
         DB::beginTransaction();
         try {
             $oldName = $category->name; // ✅ Save old name before updating
-            $category->update([
+            $updateData = [
                 'name' => $request->name,
                 'description' => $request->description,
                 'slug' => Str::slug($request->name),
-            ]);
+            ];
+
+            // Handle image upload if provided
+            if ($request->hasFile('image')) {
+                // Delete old image if exists
+                if ($category->image && Storage::disk('public')->exists($category->image)) {
+                    Storage::disk('public')->delete($category->image);
+                }
+
+                // Get the original file name
+                $originalName = $request->file('image')->getClientOriginalName();
+
+                // Create a unique filename by adding a small random string to prevent conflicts
+                $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+
+                // Store the file with the custom filename
+                $imagePath = $request->file('image')->storeAs('categories', $filename, 'public');
+                $updateData['image'] = $imagePath;
+            }
+
+            $category->update($updateData);
 
             $user = Auth::user();
             $note = 'Category "' . $oldName . '" updated to "' . $category->name . '" by ' . ($user->name ?? 'Unknown User');
