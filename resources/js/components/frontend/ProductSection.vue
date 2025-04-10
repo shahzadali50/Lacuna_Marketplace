@@ -34,42 +34,42 @@ const products = ref<Product[]>([
     id: 1,
     title: "Premium Leather Wallet",
     price: 5000.99,
-    image: "/assets/images/demo_product_images/lYubpkOSwxaKutplgtP7IKIj6OJ2C3iZcglkhZCK.jpg",
+    image: "https://picsum.photos/seed/wallet/400/400",
     category: "Accessories"
   },
   {
     id: 2,
     title: "Wireless Noise-Cancelling Headphones",
     price: 249.99,
-    image: "/assets/images/demo_product_images/m2GSiTx5vWpduRSsCyW1U2d4GJMaAHMyO7WNN8H6.png",
+    image: "https://picsum.photos/seed/headphones/400/400",
     category: "Electronics"
   },
   {
     id: 3,
     title: "Organic Green Tea Collection",
     price: 34.99,
-    image: "/assets/images/demo_product_images/m69bY0UDxaPKUO1JAIer3pkiyOSeQYIbbtDDFtT2.png",
+    image: "https://picsum.photos/seed/tea/400/400",
     category: "Food & Beverages"
   },
   {
     id: 4,
     title: "Handcrafted Ceramic Vase",
     price: 59.99,
-    image: "/assets/images/demo_product_images/Ma2FOScdATye6EKza4p1Go80d2XZVEyxQeCMWxVH.jpg",
+    image: "https://picsum.photos/seed/vase/400/400",
     category: "Home & Decor"
   },
   {
     id: 5,
     title: "Smart Fitness Watch",
     price: 199.99,
-    image: "/assets/images/demo_product_images/mCxSjYs5mWjvQLjMjkTIAFTv5tMW90d2O0n8y8LA.jpg",
+    image: "https://picsum.photos/seed/watch/400/400",
     category: "Electronics"
   },
   {
     id: 6,
     title: "Natural Skincare Set",
     price: 4000.99,
-    image: "/assets/images/demo_product_images/mcYrXB7aUjLqa6D48MMh7R7ftyvtnUqEVymwgafA.jpg",
+    image: "https://picsum.photos/seed/skincare/400/400",
     category: "Beauty"
   }
 ]);
@@ -92,7 +92,7 @@ const formatPrice = (price: number) => {
         <p class="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">{{ page.props.translations.products.subtitle }}</p>
       </div>
 
-      <Row :gutter="[16, 16]" class="flex items-center md:flex-row flex-row-reverse">
+      <Row :gutter="[8, 8]">
         <Col :xs="12" :sm="12" :md="8" :lg="8" :xl="6" v-for="product in products" :key="product.id">
           <Card hoverable class="h-full product-card">
             <template #cover>
@@ -114,6 +114,7 @@ const formatPrice = (price: number) => {
                   <Button type="primary" shape="circle" size="small" class="flex items-center justify-center !bg-pink-600 !border-pink-600 hover:!bg-pink-700 !w-6 !h-6">
                     <template #icon><heart-outlined /></template>
                   </Button>
+
                 </div>
               </div>
             </div>
@@ -125,6 +126,7 @@ const formatPrice = (price: number) => {
         <Button type="primary" size="middle" class="!bg-indigo-600 !border-indigo-600 hover:!bg-indigo-700">
           <a href="/marketplace">{{ page.props.translations.products.view_all }}</a>
         </Button>
+        <Button class="btn-primary">Primary</Button>
       </div>
     </div>
   </section>

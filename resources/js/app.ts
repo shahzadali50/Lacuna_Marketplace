@@ -5,11 +5,10 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import type { DefineComponent } from 'vue';
 import { createApp, h } from 'vue';
 import { ZiggyVue } from 'ziggy-js';
-import Antd from 'ant-design-vue'; // ✅ Import Ant Design Vue
-import 'ant-design-vue/dist/reset.css'; // ✅ Import Ant Design Vue styles
+import Antd from 'ant-design-vue';
+import 'ant-design-vue/dist/reset.css';
 import { initializeTheme } from './composables/useAppearance';
 
-// Extend ImportMeta interface for Vite...
 declare module 'vite/client' {
     interface ImportMetaEnv {
         readonly VITE_APP_NAME: string;
@@ -39,5 +38,4 @@ createInertiaApp({
     },
 });
 
-// This will set light / dark mode on page load...
 initializeTheme();
