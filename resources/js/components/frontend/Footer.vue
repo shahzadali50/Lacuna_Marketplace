@@ -34,7 +34,7 @@ const subscribe = () => {
 
 <template>
   <!-- Top Footer Section -->
-  <div class="bg-blue-600 text-white py-8">
+  <div class="bg-primary text-white py-8">
     <div class="container mx-auto px-4">
       <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <!-- Free Shipping -->
@@ -160,7 +160,7 @@ const subscribe = () => {
               :placeholder="translations.email_placeholder || 'Your email'"
               class="rounded-r-none"
             />
-            <a-button type="primary" class="rounded-l-none" @click="subscribe">
+            <a-button  class="btn-primary" @click="subscribe">
               {{ translations.subscribe || 'Subscribe' }}
             </a-button>
           </div>

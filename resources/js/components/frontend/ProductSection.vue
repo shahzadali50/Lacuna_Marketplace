@@ -106,12 +106,12 @@ const formatPrice = (price: number) => {
             <div class="">
               <h3 class="text-[15px] sm:text-xl  font-semibold text-gray-900 mb-1 line-clamp-2">{{ product.title }}</h3>
               <div class="flex justify-between items-center">
-                <span class="text-xs sm:text-sm md:text-base font-bold text-indigo-600">{{ formatPrice(product.price) }}</span>
+                <span class="text-xs sm:text-sm md:text-base font-bold text-primary">{{ formatPrice(product.price) }}</span>
                 <div class="flex gap-1">
-                  <Button type="primary" shape="circle" size="small" class="flex items-center justify-center !bg-indigo-600 !border-indigo-600 hover:!bg-indigo-700 !w-6 !h-6">
+                  <Button type="primary" shape="circle" size="small" class="flex items-center justify-center bg-primary !w-6 !h-6">
                     <template #icon><shopping-cart-outlined /></template>
                   </Button>
-                  <Button type="primary" shape="circle" size="small" class="flex items-center justify-center !bg-pink-600 !border-pink-600 hover:!bg-pink-700 !w-6 !h-6">
+                  <Button type="primary" shape="circle" size="small" class="flex items-center justify-center bg-danger hover:!bg-pink-700 !w-6 !h-6">
                     <template #icon><heart-outlined /></template>
                   </Button>
 
@@ -123,10 +123,10 @@ const formatPrice = (price: number) => {
       </Row>
 
       <div class="text-center mt-8 sm:mt-12">
-        <Button type="primary" size="middle" class="!bg-indigo-600 !border-indigo-600 hover:!bg-indigo-700">
+        <Button  size="middle" class="btn-primary">
           <a href="/marketplace">{{ page.props.translations.products.view_all }}</a>
         </Button>
-        <Button class="btn-primary">Primary</Button>
+
       </div>
     </div>
   </section>
