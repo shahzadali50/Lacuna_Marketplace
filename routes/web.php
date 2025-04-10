@@ -18,6 +18,15 @@ Route::get('/', function () {
         'locale' => App::getLocale(),
     ]);
 })->name('home');
+Route::get('/products/{id}', function ($id) {
+    return Inertia::render('frontend/products/ProductDetail', [
+        'title' => 'Product Detail',
+        'description' => 'View product details',
+        'translations' => __('messages'),
+        'locale' => App::getLocale(),
+        'productId' => $id,
+    ]);
+})->name('product.detail');
 
 Route::get('/lang/{locale}', function ($locale) {
     if (in_array($locale, ['en', 'es', 'fr', 'de', 'pt', 'jp'])) {
@@ -61,6 +70,9 @@ Route::middleware(['auth', 'user', 'verified'])->name('user.')->group(function (
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [MainController::class, 'checkRole'])->name('dashboard');
 });
+
+// Add product detail route
+
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
