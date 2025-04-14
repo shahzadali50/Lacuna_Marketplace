@@ -311,7 +311,7 @@ const displayedSpecifications = computed(() => {
 });
 
 const displayedReviews = computed(() => {
-  let reviews = [...product.value.reviews];
+  const reviews = [...product.value.reviews];
 
   // Sort reviews
   switch (reviewSort.value) {
