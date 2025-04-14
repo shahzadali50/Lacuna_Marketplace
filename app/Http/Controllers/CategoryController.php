@@ -8,11 +8,14 @@ use App\Models\Category;
 use App\Models\CategoryLog;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
+use App\Models\CategoryTranslation;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Stichoza\GoogleTranslate\GoogleTranslate;
+
 
 
 class CategoryController extends Controller
@@ -25,64 +28,67 @@ class CategoryController extends Controller
         return Inertia::render('admin/category/Index', compact('categories'));
     }
     public function store(Request $request)
-    {
-        $request->validate([
-            'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('categories', 'name')->where('user_id', Auth::id()) ->whereNull('deleted_at'),
-            ],
-            'description' => 'required|string',
-            'image' => [
-                'required',
-                'image',
-                'mimes:jpeg,png,jpg,webp',
-                'max:2048',
-            ],
+{
+    $request->validate([
+        'name' => [
+            'required', 'string', 'max:255',
+            Rule::unique('categories', 'name')->where('user_id', Auth::id())->whereNull('deleted_at'),
+        ],
+        'description' => 'required|string',
+        'image' => [
+            'required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048',
+        ],
+    ]);
+
+    DB::beginTransaction();
+    try {
+        // Upload image
+        $originalName = $request->file('image')->getClientOriginalName();
+        $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+        $imagePath = $request->file('image')->storeAs('categories', $filename, 'public');
+
+        // Create category
+        $category = Category::create([
+            'user_id' => Auth::id(),
+            'name' => $request->name,
+            'slug' => Str::slug($request->name),
+            'description' => $request->description,
+            'image' => $imagePath,
         ]);
 
-        DB::beginTransaction();
-        try {
-            // Get the original file name and extension
-            $originalName = $request->file('image')->getClientOriginalName();
+        // Log category
+        $user = Auth::user();
+        CategoryLog::create([
+            'note' => 'Category "' . $category->name . '" created by ' . ($user->name ?? 'Unknown'),
+            'category_id' => $category->id,
+            'category_name' => $category->name,
+            'user_id' => $user->id,
+        ]);
 
-            // Create a unique filename by adding a small random string to prevent conflicts
-            $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+        // 🟢 Automatic translation insert using GoogleTranslate (stichoza)
+        $tr = new GoogleTranslate(); // auto-detect source language
 
-            // Store the file with the custom filename
-            $imagePath = $request->file('image')->storeAs('categories', $filename, 'public');
-
-            $category = Category::create([
-                'user_id' => Auth::id(),
-                'name' => $request->name,
-                'slug' => Str::slug($request->name),
-                'description' => $request->description,
-                'image' => $imagePath,
-            ]);
-
-            if ($category) {
-                $user = Auth::user();
-                $note = 'Category "' . $category->name . '" created by ' . ($user->name ?? 'Unknown User');
-
-                CategoryLog::create([
-                    'note' => $note,
-                    'category_id' => $category->id,
-                    'category_name' => $category->name,
-                    'user_id' => Auth::id(),
-                ]);
-            }
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Category created successfully.');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-
-            // 🛠 Debugging: Log error
-            Log::error('Category creation failed: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Something went wrong! Please try again.');
+        foreach (['en', 'es', 'ja'] as $lang) {
+            $tr->setTarget($lang);
+            CategoryTranslation::updateOrCreate(
+                ['lang' => $lang, 'category_id' => $category->id],
+                [
+                    'name' => $tr->translate($request->name),
+                    'description' => $tr->translate($request->description),
+                ]
+            );
         }
+
+        DB::commit();
+        return redirect()->back()->with('success', 'Category created successfully.');
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Category creation failed: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Something went wrong! Please try again.');
     }
+}
+
+
 
 
     public function destroy($id)
