@@ -46,9 +46,12 @@ class CategoryController extends Controller
             'description' => $category->category_translations->first()?->description ?? $category->description,
         ]);
 
-        return Inertia::render('admin/category/Index', [
-            'categories' => $categories,
-        ]);
+
+    return Inertia::render('admin/category/Index', [
+        'categories' => $categories,
+        'translations' => __('messages'),
+        'locale' => App::getLocale(),
+    ]);
     }
     public function store(Request $request)
 {
