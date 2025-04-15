@@ -42,7 +42,7 @@ const subscribe = () => {
           <div class="mr-4">
             <CarOutlined class="text-3xl" />
           </div>
- 
+
             <p class="text-sm text-blue-100">{{ translations.free_shipping_desc || 'On orders over $50' }}</p>
           </div>
         </div>
@@ -70,7 +70,8 @@ const subscribe = () => {
         </div>
       </div>
     </div>
-  </div>
+
+
 
   <!-- Main Footer -->
   <footer class="bg-gray-100 pt-12 pb-8">

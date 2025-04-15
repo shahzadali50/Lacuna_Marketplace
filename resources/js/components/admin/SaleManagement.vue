@@ -1,15 +1,42 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import { FilterOutlined,DollarCircleOutlined } from '@ant-design/icons-vue';
+import { FilterOutlined, DollarCircleOutlined } from '@ant-design/icons-vue';
 import DashboardCard from '@/components/admin/DashboardCard.vue';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import { usePage } from '@inertiajs/vue3';
+
+interface Order {
+    id: number;
+    total_price: string | number;
+    created_at: string;
+}
+
+interface Props {
+    orders: Order[];
+}
+
+interface Translations {
+    dashboardMainPage?: {
+        sales?: string;
+        todays_sale?: string;
+        weekly_sale?: string;
+        monthly_sale?: string;
+        sale_filter_by_date?: string;
+        start_date?: string;
+        end_date?: string;
+        filtered_revenue?: string;
+    };
+}
+
+const page = usePage();
+const translations = computed(() => {
+    return (page.props.translations as Translations)?.dashboardMainPage || {};
+});
 
 dayjs.extend(isBetween);
 
-const props = defineProps({
-    orders: Array
-});
+const props = defineProps<Props>();
 
 const filters = ref({
     start_date: null,
@@ -73,32 +100,57 @@ const filteredRevenue = computed(() => {
 
 <template>
     <div style="background-color: #ececec; padding: 20px">
-
         <a-row :gutter="[16, 16]">
             <a-col :xs="24">
-                <h2 class="text-2xl">Sales</h2>
+                <h2 class="text-2xl">{{ translations.sales || 'Sales' }}</h2>
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
-                <DashboardCard title="Today's Sale" :value="todaySales" :icon="DollarCircleOutlined" bgColor="bg-cyan-600" />
+                <DashboardCard
+                    :title="translations.todays_sale || 'Today\'s Sale'"
+                    :value="todaySales"
+                    :icon="DollarCircleOutlined"
+                    bgColor="bg-cyan-600"
+                />
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
-                <DashboardCard title="Weekly Sale" :value="weeklySales" :icon="DollarCircleOutlined" bgColor="bg-cyan-600" />
+                <DashboardCard
+                    :title="translations.weekly_sale || 'Weekly Sale'"
+                    :value="weeklySales"
+                    :icon="DollarCircleOutlined"
+                    bgColor="bg-cyan-600"
+                />
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
-                <DashboardCard title="Monthly Sale" :value="monthlySales" :icon="DollarCircleOutlined" bgColor="bg-cyan-600" />
+                <DashboardCard
+                    :title="translations.monthly_sale || 'Monthly Sale'"
+                    :value="monthlySales"
+                    :icon="DollarCircleOutlined"
+                    bgColor="bg-cyan-600"
+                />
             </a-col>
-
 
             <a-col :xs="24">
-                <h5>Sale Filter By Date</h5>
+                <h5>{{ translations.sale_filter_by_date || 'Sale Filter By Date' }}</h5>
                 <div class="flex">
-                <a-date-picker class="mx-1" v-model:value="filters.start_date" placeholder="Start Date" />
-                <a-date-picker class="mx-1" v-model:value="filters.end_date" placeholder="End Date" />
+                    <a-date-picker
+                        class="mx-1"
+                        v-model:value="filters.start_date"
+                        :placeholder="translations.start_date || 'Start Date'"
+                    />
+                    <a-date-picker
+                        class="mx-1"
+                        v-model:value="filters.end_date"
+                        :placeholder="translations.end_date || 'End Date'"
+                    />
                 </div>
             </a-col>
             <a-col :lg="6" :xs="24">
-                <DashboardCard title="Filtered Revenue" :value="filteredRevenue" :icon="FilterOutlined "
-                bgColor="bg-slate-600" />
+                <DashboardCard
+                    :title="translations.filtered_revenue || 'Filtered Revenue'"
+                    :value="filteredRevenue"
+                    :icon="FilterOutlined"
+                    bgColor="bg-slate-600"
+                />
             </a-col>
         </a-row>
     </div>

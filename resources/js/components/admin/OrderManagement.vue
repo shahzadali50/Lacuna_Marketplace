@@ -1,15 +1,41 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
-import {  FilterOutlined,ShoppingCartOutlined} from '@ant-design/icons-vue';
+import { FilterOutlined, ShoppingCartOutlined } from '@ant-design/icons-vue';
 import DashboardCard from '@/components/admin/DashboardCard.vue';
 import dayjs from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
+import { usePage } from '@inertiajs/vue3';
+
+interface Order {
+    id: number;
+    created_at: string;
+}
+
+interface Props {
+    orders: Order[];
+}
+
+interface Translations {
+    dashboardMainPage?: {
+        orders?: string;
+        monthly_orders?: string;
+        weekly_orders?: string;
+        todays_orders?: string;
+        orders_filter_by_date?: string;
+        start_date?: string;
+        end_date?: string;
+        filtered_orders?: string;
+    };
+}
+
+const page = usePage();
+const translations = computed(() => {
+    return (page.props.translations as Translations)?.dashboardMainPage || {};
+});
 
 dayjs.extend(isBetween);
 
-const props = defineProps({
-    orders: Array
-});
+const props = defineProps<Props>();
 
 const filters = ref({
     start_date: null,
@@ -54,19 +80,19 @@ const filteredOrders = computed(() => {
     <div class="mt-5" style="background-color: #ececec; padding: 20px">
         <a-row :gutter="[16, 16]">
             <a-col :lg="24" :md="24" :sm="24" :xs="24">
-                <h2 class="text-2xl">Orders</h2>
+                <h2 class="text-2xl">{{ translations.orders || 'Orders' }}</h2>
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
                 <DashboardCard
-                    title="Monthly Orders"
+                    :title="translations.monthly_orders || 'Monthly Orders'"
                     :value="monthlyOrders"
-                     :icon="ShoppingCartOutlined"
+                    :icon="ShoppingCartOutlined"
                     bgColor="bg-green-700"
                 />
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
                 <DashboardCard
-                    title="Weekly Orders"
+                    :title="translations.weekly_orders || 'Weekly Orders'"
                     :value="weeklyOrders"
                     :icon="ShoppingCartOutlined"
                     bgColor="bg-green-700"
@@ -74,23 +100,32 @@ const filteredOrders = computed(() => {
             </a-col>
             <a-col :lg="6" :sm="12" :xs="24">
                 <DashboardCard
-                    title="Today's Orders"
+                    :title="translations.todays_orders || 'Today\'s Orders'"
                     :value="todayOrders"
                     :icon="ShoppingCartOutlined"
                     bgColor="bg-green-700"
                 />
             </a-col>
             <a-col :lg="24">
-                <h5>Orders Filter By Date</h5>
+                <h5>{{ translations.orders_filter_by_date || 'Orders Filter By Date' }}</h5>
                 <div class="flex">
-                    <a-date-picker class="mx-1" v-model:value="filters.start_date" placeholder="Start Date" />
-                    <a-date-picker class="mx-1" v-model:value="filters.end_date" placeholder="End Date" /></div>
+                    <a-date-picker
+                        class="mx-1"
+                        v-model:value="filters.start_date"
+                        :placeholder="translations.start_date || 'Start Date'"
+                    />
+                    <a-date-picker
+                        class="mx-1"
+                        v-model:value="filters.end_date"
+                        :placeholder="translations.end_date || 'End Date'"
+                    />
+                </div>
             </a-col>
             <a-col :lg="6" :xs="24">
                 <DashboardCard
-                    title="Filtered Orders"
+                    :title="translations.filtered_orders || 'Filtered Orders'"
                     :value="filteredOrders"
-                    :icon="FilterOutlined "
+                    :icon="FilterOutlined"
                     bgColor="bg-slate-600"
                 />
             </a-col>

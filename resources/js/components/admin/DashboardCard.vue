@@ -13,7 +13,7 @@ defineProps<{
     <a-card class="dashboard-card">
         <div class="flex justify-between">
             <div>
-                <h3 class="text-sm text-gray-400">{{ title }}</h3>
+                <h3 class="text-sm text-gray-400">{{ title }} </h3>
                 <h4 class="text-xl font-bold mb-0">{{ value }}</h4>
             </div>
             <div class="flex justify-end">
