@@ -8,14 +8,15 @@ use App\Models\Category;
 use App\Models\CategoryLog;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Jobs\TranslateCategory;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use App\Models\CategoryTranslation;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Stichoza\GoogleTranslate\GoogleTranslate;
-use Illuminate\Support\Facades\App;
 
 // this below pakage is used for automatically translate👇
 // composer require stichoza/google-translate-php
@@ -28,39 +29,33 @@ class CategoryController extends Controller
     public function index()
     {
         $locale = session('locale', App::getLocale());
-        // dd($locale);
-        $categories = Category::where('user_id', Auth::id())
-            ->with(['category_translations' => function ($query) use ($locale) {
-                $query->where('lang', $locale);
-            }])
-            ->orderBy('created_at', 'desc')
-            ->paginate(5);
 
-        // Transform each category to include translated name/description
-        $categories->getCollection()->transform(function ($category) use ($locale) {
-            $translated = $category->category_translations->first();
+        // Eager load translations for the current session language
+        $categories = Category::with(['category_translations' => fn($q) => $q->where('lang', $locale)])
+            ->where('user_id', Auth::id())
+            ->latest()
+            ->paginate(10);
 
-            return [
-                'id' => $category->id,
-                'image' => $category->image,
-                'slug' => $category->slug,
-                'created_at' => $category->created_at,
-                'name' => $translated?->name ?? $category->name,
-                'description' => $translated?->description ?? $category->description,
-            ];
-        });
+        // Transform: use translated name/description or fallback
+        $categories->getCollection()->transform(fn($category) => [
+            'id' => $category->id,
+            'slug' => $category->slug,
+            'image' => $category->image,
+            'created_at' => $category->created_at->format('Y-m-d H:i'),
+            'name' => $category->category_translations->first()?->name ?? $category->name,
+            'description' => $category->category_translations->first()?->description ?? $category->description,
+        ]);
 
         return Inertia::render('admin/category/Index', [
             'categories' => $categories,
         ]);
     }
-
     public function store(Request $request)
 {
     $request->validate([
         'name' => [
             'required', 'string', 'max:255',
-            Rule::unique('categories', 'name')->where('user_id', Auth::id())->whereNull('deleted_at'),
+            Rule::unique('category_translations', 'name')->where('user_id', Auth::id())->whereNull('deleted_at'),
         ],
         'description' => 'required|string',
         'image' => [
@@ -93,19 +88,10 @@ class CategoryController extends Controller
             'user_id' => $user->id,
         ]);
 
-        // 🟢 Automatic translation insert using GoogleTranslate (stichoza)
-        $tr = new GoogleTranslate(); // auto-detect source language
 
-        foreach (['en', 'pt', 'ja'] as $lang) {
-            $tr->setTarget($lang);
-            CategoryTranslation::updateOrCreate(
-                ['lang' => $lang, 'category_id' => $category->id],
-                [
-                    'name' => $tr->translate($request->name),
-                    'description' => $tr->translate($request->description),
-                ]
-            );
-        }
+        // ✅ Dispatch translation job
+        TranslateCategory::dispatch($category);
+
 
         DB::commit();
         return redirect()->back()->with('success', 'Category created successfully.');
@@ -133,6 +119,7 @@ class CategoryController extends Controller
             ]);
             $category->delete();
             $category->brands()->delete();
+            $category->category_translations()->delete();
             return redirect()->back()->with('success', 'category deleted successfully.');
         }
 
@@ -144,7 +131,7 @@ class CategoryController extends Controller
         $request->validate([
             'name' => [
                 'required', 'string', 'max:255',
-                Rule::unique('categories', 'name')
+                Rule::unique('category_translations', 'name')
                     ->where('user_id', Auth::id())
                     ->whereNull('deleted_at')
                     ->ignore($id),
@@ -152,6 +139,7 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
+
         $category = Category::find($id);
 
         if (!$category) {
@@ -160,51 +148,46 @@ class CategoryController extends Controller
 
         DB::beginTransaction();
         try {
-            $oldName = $category->name; // ✅ Save old name before updating
+            $oldName = $category->name;
+
             $updateData = [
                 'name' => $request->name,
                 'description' => $request->description,
                 'slug' => Str::slug($request->name),
             ];
 
-            // Handle image upload if provided
+            // Handle image update if provided
             if ($request->hasFile('image')) {
-                // Delete old image if exists
                 if ($category->image && Storage::disk('public')->exists($category->image)) {
                     Storage::disk('public')->delete($category->image);
                 }
 
-                // Get the original file name
                 $originalName = $request->file('image')->getClientOriginalName();
-
-                // Create a unique filename by adding a small random string to prevent conflicts
                 $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
-
-                // Store the file with the custom filename
                 $imagePath = $request->file('image')->storeAs('categories', $filename, 'public');
                 $updateData['image'] = $imagePath;
             }
 
             $category->update($updateData);
 
+            // ✅ Log the update
             $user = Auth::user();
             $note = 'Category "' . $oldName . '" updated to "' . $category->name . '" by ' . ($user->name ?? 'Unknown User');
-
             CategoryLog::create([
                 'note' => $note,
                 'category_id' => $category->id,
-                'category_name' => $category->name, // ✅ Store updated name
+                'category_name' => $category->name,
                 'user_id' => Auth::id(),
             ]);
 
+            // ✅ Dispatch translation job (for updated content)
+            TranslateCategory::dispatch($category);
+
             DB::commit();
             return redirect()->back()->with('success', 'Category updated successfully.');
-
         } catch (Exception $e) {
             DB::rollBack();
-
             Log::error('Category update failed: ' . $e->getMessage());
-
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }

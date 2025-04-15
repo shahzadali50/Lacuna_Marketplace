@@ -200,7 +200,7 @@ const openImagePreview = (imagePath: string) => {
                                 </div>
                             </template>
                             <template v-if="column.dataIndex === 'name'">
-                                <a>{{ record.name }}</a>
+                                {{ record.name }}
                             </template>
                             <template v-else-if="column.dataIndex === 'created_at'">
                                 {{ formatDate(record.created_at) }}

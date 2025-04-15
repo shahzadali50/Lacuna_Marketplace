@@ -17,7 +17,9 @@ return new class extends Migration
             $table->string('description');
             $table->string('lang');
             $table->foreignId('category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
