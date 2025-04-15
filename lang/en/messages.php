@@ -140,7 +140,7 @@ return [
         'name' => 'Name',
         'name_placeholder' => 'Enter Name',
         'description' => 'Description',
-        'description_placeholder' => 'Enter Description',
+        'eneter_description' => 'Enter Description',
         'image' => 'Image',
         'preview' => 'Preview',
         'cancel' => 'Cancel',

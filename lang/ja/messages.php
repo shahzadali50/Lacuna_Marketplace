@@ -137,7 +137,7 @@ return [
         'name' => '名前',
         'name_placeholder' => '名前を入力',
         'description' => '説明',
-        'description_placeholder' => '説明を入力',
+        'eneter_description' => '説明を入力',
         'image' => '画像',
         'preview' => 'プレビュー',
         'cancel' => 'キャンセル',

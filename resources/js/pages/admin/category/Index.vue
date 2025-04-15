@@ -96,11 +96,11 @@ const saveCategory = () => {
 }
 const deleteCategory = (id: number) => {
     Modal.confirm({
-        title: 'Confirm Category Deletion',
-        content: 'Deleting this category will also remove all associated brands. This action is irreversible. Are you sure you want to proceed?',
-        okText: 'Yes, Delete',
+        title: translations.value.confirm_delete_title || 'Are you sure you want to delete',
+        content: translations.value.confirm_delete_content_category || 'Deleting this category will also remove all associated brands. This action is irreversible. Are you sure you want to proceed?',
+        okText: translations.value.confirm_delete_ok || 'Yes, Delete',
         okType: 'danger',
-        cancelText: 'Cancel',
+        cancelText: translations.value.confirm_delete_cancel || 'Cancel',
         onOk() {
             isLoading.value = true;
             form.delete(route('user.category.delete', { id: id }), {
@@ -260,7 +260,7 @@ const openImagePreview = (imagePath: string) => {
                 </div>
                 <div class="mb-4">
                     <label class="block">{{ translations.description || 'Description' }}</label>
-                    <a-textarea v-model:value="form.description" class="mt-2 w-full" :placeholder="translations.description_placeholder || 'Enter Description'"
+                    <a-textarea v-model:value="form.description" class="mt-2 w-full" :placeholder="translations.eneter_description || 'Enter Description'"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="form.errors.description" class="text-red-500">{{ form.errors.description }}</div>
                 </div>
@@ -293,7 +293,7 @@ const openImagePreview = (imagePath: string) => {
                 </div>
                 <div class="mb-4">
                     <label class="block">{{ translations.description || 'Description' }}</label>
-                    <a-textarea v-model:value="editForm.description" class="mt-2 w-full" :placeholder="translations.description_placeholder || 'Enter Description'"
+                    <a-textarea v-model:value="editForm.description" class="mt-2 w-full" :placeholder="translations.eneter_description || 'Enter Description'"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="editForm.errors.description" class="text-red-500">{{ editForm.errors.description }}</div>
                 </div>
@@ -338,7 +338,7 @@ const openImagePreview = (imagePath: string) => {
                 </div>
                 <div class="mb-4">
                     <label class="block">{{ translations.description || 'Description' }}</label>
-                    <a-textarea v-model:value="brandForm.description" class="mt-2 w-full" :placeholder="translations.description_placeholder || 'Enter Description'"
+                    <a-textarea v-model:value="brandForm.description" class="mt-2 w-full" :placeholder="translations.eneter_description || 'Enter Description'"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="brandForm.errors.description" class="text-red-500">{{ brandForm.errors.description }}
                     </div>

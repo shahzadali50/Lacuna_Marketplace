@@ -140,7 +140,7 @@ return [
         'name' => 'Nome',
         'name_placeholder' => 'Digite o Nome',
         'description' => 'Descrição',
-        'description_placeholder' => 'Digite a Descrição',
+        'eneter_description' => 'Digite a Descrição',
         'image' => 'Imagem',
         'preview' => 'Prévia',
         'cancel' => 'Cancelar',
