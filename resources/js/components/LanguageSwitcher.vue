@@ -11,7 +11,7 @@ const availableLocales = [
 //   { code: 'fr', name: 'Français' },
 //   { code: 'de', name: 'Deutsch' },
   { code: 'pt', name: 'Português' },
-  { code: 'jp', name: '日本語' },
+  { code: 'ja', name: '日本語' },
 ];
 
 const switchLanguage = (locale: string) => {

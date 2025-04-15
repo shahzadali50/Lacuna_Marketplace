@@ -3,6 +3,10 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import dayjs from "dayjs";
 import { Link } from '@inertiajs/vue3';
+import DataTable from 'datatables.net-vue3';
+import DataTablesCore from 'datatables.net-dt';
+
+DataTable.use(DataTablesCore);
 
 const formatDate = (date: string) => {
     return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
@@ -25,6 +29,11 @@ defineProps({
     <AdminLayout>
     <Head title="Category Logs" />
         <a-row>
+        <a-col-12>
+
+
+
+        </a-col-12>
             <a-col :span="24">
                 <div class="bg-white rounded-lg responsive-table p-4 shadow-md">
                     <div class="mb-4 flex items-center justify-between">
@@ -33,8 +42,8 @@ defineProps({
                             <a-button type="default">Back</a-button>
                         </Link>
                     </div>
-
-                    <a-table v-if="CategoryLog" :columns="columns" :data-source="CategoryLog.data" rowKey="id">
+                    
+                    <a-table  v-if="CategoryLog" :columns="columns" :data-source="CategoryLog.data" rowKey="id" id="datatable">
                         <template #bodyCell="{ column, record,index  }">
                             <template v-if="column.dataIndex === 'id'">
                                 {{ index + 1 }}

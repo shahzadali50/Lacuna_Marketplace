@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Stichoza\GoogleTranslate\GoogleTranslate;
+use Illuminate\Support\Facades\App;
 
 // this below pakage is used for automatically translate👇
 // composer require stichoza/google-translate-php
@@ -26,11 +27,34 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories= Category::where('user_id', Auth::id())
-        ->orderBy('created_at', 'desc')
-        ->paginate(5);
-        return Inertia::render('admin/category/Index', compact('categories'));
+        $locale = session('locale', App::getLocale());
+        // dd($locale);
+        $categories = Category::where('user_id', Auth::id())
+            ->with(['category_translations' => function ($query) use ($locale) {
+                $query->where('lang', $locale);
+            }])
+            ->orderBy('created_at', 'desc')
+            ->paginate(5);
+
+        // Transform each category to include translated name/description
+        $categories->getCollection()->transform(function ($category) use ($locale) {
+            $translated = $category->category_translations->first();
+
+            return [
+                'id' => $category->id,
+                'image' => $category->image,
+                'slug' => $category->slug,
+                'created_at' => $category->created_at,
+                'name' => $translated?->name ?? $category->name,
+                'description' => $translated?->description ?? $category->description,
+            ];
+        });
+
+        return Inertia::render('admin/category/Index', [
+            'categories' => $categories,
+        ]);
     }
+
     public function store(Request $request)
 {
     $request->validate([
@@ -72,7 +96,7 @@ class CategoryController extends Controller
         // 🟢 Automatic translation insert using GoogleTranslate (stichoza)
         $tr = new GoogleTranslate(); // auto-detect source language
 
-        foreach (['en', 'es', 'ja'] as $lang) {
+        foreach (['en', 'pt', 'ja'] as $lang) {
             $tr->setTarget($lang);
             CategoryTranslation::updateOrCreate(
                 ['lang' => $lang, 'category_id' => $category->id],

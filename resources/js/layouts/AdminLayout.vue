@@ -7,6 +7,7 @@ import { router } from '@inertiajs/vue3'
 import {
     FilterOutlined
 } from '@ant-design/icons-vue';
+import LanguageSwitcher from "@/components/LanguageSwitcher.vue";
 useFlashMessages();
 // State for sidebar
 const isMobile = ref(window.innerWidth <= 992);
@@ -64,6 +65,7 @@ const clearCache = () => {
                         @click.stop="collapsed = !collapsed"></i>
                 </div>
                 <a-button  @click="clearCache"  type="dashed" danger> <FilterOutlined />Clear Cache</a-button>
+                <LanguageSwitcher />
 
             </a-layout-header>
 

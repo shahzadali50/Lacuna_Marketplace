@@ -29,7 +29,7 @@ Route::get('/products/{id}', function ($id) {
 })->name('product.detail');
 
 Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'es', 'fr', 'de', 'pt', 'jp'])) {
+    if (in_array($locale, ['en', 'pt', 'ja'])) {
         session(['locale' => $locale]);
     }
     return redirect()->back();
