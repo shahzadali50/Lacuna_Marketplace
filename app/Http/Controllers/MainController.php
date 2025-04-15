@@ -8,9 +8,10 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Category;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
 
 class MainController extends Controller
 {
@@ -62,6 +63,15 @@ class MainController extends Controller
                 return $product;
             });
 
-        return Inertia::render('admin/Dashboard', compact('brands', 'totalProduct', 'category', 'orders', 'products'));
+            return Inertia::render('admin/Dashboard', [
+                'brands' => $brands,
+                'totalProduct' => $totalProduct,
+                'category' => $category,
+                'orders' => $orders,
+                'products' => $products,
+                'translations' => __('messages'),
+                'locale' => App::getLocale(),
+            ]);
+        }
     }
-}
+ 

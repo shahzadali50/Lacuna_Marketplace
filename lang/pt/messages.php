@@ -92,4 +92,15 @@ return [
     'cookies' => 'Cookies',
 ],
 
+    'sidebar' => [
+        'dashboard' => 'Painel de Controle',
+        'categories' => 'Categorias',
+        'brands' => 'Marcas',
+        'products' => 'Produtos',
+        'purchase_products' => 'Comprar Produtos',
+        'get_orders' => 'Obter Pedidos',
+        'order_list' => 'Lista de Pedidos',
+        'settings' => 'Configurações',
+    ],
+
 ];

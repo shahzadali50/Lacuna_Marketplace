@@ -92,4 +92,15 @@ return [
     'cookies' => 'クッキー',
 ],
 
+    'sidebar' => [
+        'dashboard' => 'ダッシュボード',
+        'categories' => 'カテゴリー',
+        'brands' => 'ブランド',
+        'products' => '製品',
+        'purchase_products' => '製品を購入',
+        'get_orders' => '注文を取得',
+        'order_list' => '注文一覧',
+        'settings' => '設定',
+    ],
+
 ];

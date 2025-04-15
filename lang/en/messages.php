@@ -92,5 +92,16 @@ return [
         'privacy' => 'Privacy',
         'cookies' => 'Cookies',
     ],
+
+    'sidebar' => [
+        'dashboard' => 'Dashboard',
+        'categories' => 'Categories',
+        'brands' => 'Brands',
+        'products' => 'Products',
+        'purchase_products' => 'Purchase Products',
+        'get_orders' => 'Get Orders',
+        'order_list' => 'Order List',
+        'settings' => 'Settings',
+    ],
 ];
 
