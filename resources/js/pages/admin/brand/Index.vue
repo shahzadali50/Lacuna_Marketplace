@@ -9,8 +9,10 @@ import { ref, computed } from "vue";
 
 
 
+
 const columns = [
     { title: "Sr.", dataIndex: "id", key: "id" },
+    { title: "Image", dataIndex: "image", key: "image" },
     { title: "Name", dataIndex: "name", key: "name" },
     { title: "Description", dataIndex: "description", key: "description" },
     { title: "Category", dataIndex: "category", key: "category" },
@@ -24,8 +26,8 @@ const formatDate = (date: string) => {
 // Define props correctly
 
 const props = defineProps({
-  categories: Array,
-  brands: Object,
+    categories: Array,
+    brands: Object,
 });
 // Transform categories into Ant Design's options format
 
@@ -37,13 +39,14 @@ const categoryOptions = computed(() => {
 });
 
 const filterOption = (input: string, option: any) => {
-  return option.label.toLowerCase().includes(input.toLowerCase());
+    return option.label.toLowerCase().includes(input.toLowerCase());
 };
 
 const form = useForm({
     name: "",
     description: "",
     category_id: null,
+    image: null as File | null,
 });
 const editForm = useForm({
     id: null,
@@ -80,7 +83,12 @@ const isEditModalVisible = ref(false);
 const isproductModalVisible = ref(false);
 const isAddBrandModalVisible = ref(false);
 const selectedBrandName = ref("");
+const previewImageUrl = ref('');
+
+const isImagePreviewModalVisible = ref(false);
 const openAddBrandModal = () => {
+    form.reset();
+    imagePreview.value = null;
     isAddBrandModalVisible.value = true;
 
 };
@@ -91,7 +99,15 @@ const openEditModal = (brands: any) => {
     editForm.description = brands.description;
     isEditModalVisible.value = true;
 };
-
+const imagePreview = ref(null);
+const handleBrandImageChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        form.image = target.files[0];
+        // Create preview URL
+        imagePreview.value = URL.createObjectURL(target.files[0]);
+    }
+};
 const saveBrand = () => {
     isLoading.value = true;
     form.post(route("user.brand.store"), {
@@ -133,9 +149,14 @@ const saveProduct = () => {
         },
     });
 };
+
+const openImagePreview = (imagePath: string) => {
+    previewImageUrl.value = '/storage/' + imagePath;
+    isImagePreviewModalVisible.value = true;
+};
 </script>
 <template>
-        <div v-if="isLoading" class="loading-overlay">
+    <div v-if="isLoading" class="loading-overlay">
         <a-spin size="large" />
     </div>
     <AdminLayout>
@@ -147,10 +168,10 @@ const saveProduct = () => {
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold mb-4">Brand List</h2>
                         <div>
-                        <a-button @click="openAddBrandModal()" type="default">Add Brand</a-button>
-                        <Link :href="route('user.brand-log')">
-                        <a-button type="default">Brand Logs</a-button>
-                        </Link>
+                            <a-button @click="openAddBrandModal()" type="default">Add Brand</a-button>
+                            <Link :href="route('user.brand-log')">
+                            <a-button type="default">Brand Logs</a-button>
+                            </Link>
                         </div>
                     </div>
                     <a-table :columns="columns" :data-source="brands.data" rowKey="id">
@@ -158,14 +179,22 @@ const saveProduct = () => {
                             <template v-if="column.dataIndex === 'id'">
                                 {{ index + 1 }}
                             </template>
+                            <template v-if="column.dataIndex === 'image'">
+                                <div>
+                                    <img v-if="record.image" :src="'/storage/' + record.image" alt="Category Image"
+                                        class="w-12 h-12 object-cover rounded mb-1 cursor-pointer hover:opacity-80 transition-opacity"
+                                        @click="openImagePreview(record.image)" />
+                                    <span v-else class="text-gray-400 mb-1">No Image</span>
+                                </div>
+                            </template>
                             <template v-if="column.dataIndex === 'name'">
-                                <a>{{ record.name }}</a>
+                                {{ record.name }}
                             </template>
                             <template v-else-if="column.dataIndex === 'description'">
                                 {{ record.description ? record.description : "N/A" }}
                             </template>
                             <template v-else-if="column.dataIndex === 'category'">
-                                {{ record.category?.name || "N/A" }}
+                                {{ record.category_name || "N/A" }}
                             </template>
                             <template v-else-if="column.dataIndex === 'created_at'">
                                 {{ formatDate(record.created_at) }}
@@ -199,46 +228,52 @@ const saveProduct = () => {
                 </div>
             </a-col>
         </a-row>
-        <!-- add brand -->
-       <!-- Add Brand Modal -->
-<a-modal v-model:open="isAddBrandModalVisible" title="Add Brand" @cancel="isAddBrandModalVisible = false" :footer="null">
-    <form @submit.prevent="saveBrand()">
-    <div class="mb-4">
-        <label class="block">Category</label>
-        <a-select
-    v-model:value="form.category_id"
-    show-search
-    placeholder="Select a Category"
-    class="mt-2 w-full"
-    :options="categoryOptions"
-    :filter-option="filterOption"
-  ></a-select>
-        <div v-if="form.errors.category_id" class="text-red-500">
-            {{ form.errors.category_id }}
-        </div>
-    </div>
-    <div class="mb-4">
-        <label class="block">Name</label>
-        <a-input v-model:value="form.name" class="mt-2 w-full" placeholder="Enter Name" />
-        <div v-if="form.errors.name" class="text-red-500">
-            {{ form.errors.name }}
-        </div>
-    </div>
-    <div class="mb-4">
-        <label class="block">Description</label>
-        <a-textarea v-model:value="form.description" class="mt-2 w-full" placeholder="Description"
-            :auto-size="{ minRows: 2, maxRows: 5 }" />
-        <div v-if="form.errors.description" class="text-red-500">
-            {{ form.errors.description }}
-        </div>
-    </div>
-    <div class="text-right">
-        <a-button type="default" @click="isAddBrandModalVisible = false">Cancel</a-button>
-        <a-button type="primary" html-type="submit" class="ml-2">Add</a-button>
-    </div>
-</form>
 
-</a-modal>
+        <!-- Add Brand Modal -->
+        <a-modal v-model:open="isAddBrandModalVisible" title="Add Brand" @cancel="isAddBrandModalVisible = false"
+            :footer="null">
+            <form @submit.prevent="saveBrand()" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label class="block">Category</label>
+                    <a-select v-model:value="form.category_id" show-search placeholder="Select a Category"
+                        class="mt-2 w-full" :options="categoryOptions" :filter-option="filterOption"></a-select>
+                    <div v-if="form.errors.category_id" class="text-red-500">
+                        {{ form.errors.category_id }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block">Name</label>
+                    <a-input v-model:value="form.name" class="mt-2 w-full" placeholder="Enter Name" />
+                    <div v-if="form.errors.name" class="text-red-500">
+                        {{ form.errors.name }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block">Description</label>
+                    <a-textarea v-model:value="form.description" class="mt-2 w-full" placeholder="Description"
+                        :auto-size="{ minRows: 2, maxRows: 5 }" />
+                    <div v-if="form.errors.description" class="text-red-500">
+                        {{ form.errors.description }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block">Image</label>
+                    <input type="file" @change="handleBrandImageChange" accept="image/*"
+                        class="mt-2 w-full p-2 border rounded" />
+                    <div v-if="form.errors.image" class="text-red-500">{{ form.errors.image }}</div>
+                    <!-- Image Preview -->
+                    <div v-if="imagePreview" class="mt-2">
+                        <p class="text-sm text-gray-600 mb-1">Preview</p>
+                        <img :src="imagePreview" alt="Image Preview" class="w-24 h-24 object-cover rounded border" />
+                    </div>
+                </div>
+                <div class="text-right">
+                    <a-button type="default" @click="isAddBrandModalVisible = false">Cancel</a-button>
+                    <a-button type="primary" html-type="submit" class="ml-2">Add</a-button>
+                </div>
+            </form>
+
+        </a-modal>
 
         <!-- Edit Category Modal -->
         <a-modal v-model:open="isEditModalVisible" title="Edit Brand" @cancel="isEditModalVisible = false"
@@ -270,7 +305,8 @@ const saveProduct = () => {
             :footer="null">
             <h4 class="text-md">Brand ({{ selectedBrandName }})</h4>
             <form @submit.prevent="saveProduct()">
-                <a-input v-show="false" v-model:value="productForm.brand_id" class="mt-2 w-full" placeholder="Enter Name" />
+                <a-input v-show="false" v-model:value="productForm.brand_id" class="mt-2 w-full"
+                    placeholder="Enter Name" />
                 <div class="mb-4">
                     <label class="block">Name</label>
                     <a-input v-model:value="productForm.name" class="mt-2 w-full" placeholder="Enter Name" />
@@ -292,5 +328,13 @@ const saveProduct = () => {
                 </div>
             </form>
         </a-modal>
+        <!-- Image Preview Modal -->
+        <a-modal v-model:open="isImagePreviewModalVisible" title="Image Preview"
+            @cancel="isImagePreviewModalVisible = false" :footer="null" width="600px">
+            <div class="flex justify-center p-4">
+                <img :src="previewImageUrl" alt="Full Size Image" class="max-w-full max-h-[500px] object-cover" />
+            </div>
+        </a-modal>
+
     </AdminLayout>
 </template>

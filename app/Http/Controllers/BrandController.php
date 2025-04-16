@@ -2,33 +2,67 @@
 
 namespace App\Http\Controllers;
 
+use Str;
 use Exception;
 use Inertia\Inertia;
 use App\Models\Brand;
 use App\Models\BrandLog;
 use App\Models\Category;
-use Illuminate\Support\Str;
 use App\Jobs\TranslateBrand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Models\BrandTranslation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 
 class BrandController extends Controller
 {
 
     public function index()
-    {
-        $brands = Brand::where('user_id', Auth::id())
-        ->with( 'category')
+{
+    try {
+        $locale = session('locale', App::getLocale());
+
+        // Load brand translations for current locale
+        $brands = Brand::with([
+                'brand_translations' => fn($q) => $q->where('lang', $locale),
+                'category'
+            ])
+            ->where('user_id', Auth::id())
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-            $categories = Category::all();
 
-            return Inertia::render('admin/brand/Index', compact('brands', 'categories'));
+        // Apply fallback for name and description
+        $brands->getCollection()->transform(fn($brand) => [
+            'id' => $brand->id,
+            'slug' => $brand->slug,
+            'image' => $brand->image,
+            'created_at' => $brand->created_at->format('Y-m-d H:i'),
+            'name' => $brand->brand_translations->first()?->name ?? $brand->name,
+            'description' => $brand->brand_translations->first()?->description ?? $brand->description,
+            'category_name' => $brand->category?->name ?? 'N/A',
+        ]);
+
+        $categories = Category::all();
+
+        return Inertia::render('admin/brand/Index', [
+            'brands' => $brands,
+            'categories' => $categories,
+            'translations' => __('messages'),
+            'locale' => $locale,
+        ]);
+
+    } catch (\Throwable $e) {
+        \Log::error('Failed to load brands in index(): ' . $e->getMessage());
+
+        return redirect()->back()->with('error', 'Something went wrong while loading brands.');
     }
+}
+
     public function related_brand_list($slug)
     {
         $category = Category::where('slug', $slug)->first();
@@ -62,9 +96,9 @@ class BrandController extends Controller
 
         try {
             // Upload image
-            $image = $request->file('image');
-            $imageName = time() . '_' . $image->getClientOriginalName();
-            $imagePath = $image->storeAs('brands', $imageName, 'public');
+            $originalName = $request->file('image')->getClientOriginalName();
+            $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+            $imagePath = $request->file('image')->storeAs('brands', $filename, 'public');
 
             // Create brand
             $brand = Brand::create([
@@ -100,59 +134,91 @@ class BrandController extends Controller
 
 
     public function update(Request $request, $id)
-    {
-        $request->validate([
-            'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('brands', 'name')
-                    ->where('user_id', Auth::id())
-                    ->whereNull('deleted_at')
-                    ->ignore($id),
-            ],
-            'description' => 'nullable|string',
-        ]);
-        $brand = Brand::find($id);
+{
+    $locale = session('locale', App::getLocale());
 
-        if (!$brand) {
-            return redirect()->back()->with('error', 'Category not found.');
-        }
-
-        DB::beginTransaction();
-        try {
-            $oldName = $brand->name; // ✅ Save old name before updating
-            $brand->update([
-                'name' => $request->name,
-                'description' => $request->description,
-                'slug' => Str::slug($request->name),
-            ]);
-
-            $user = Auth::user();
-            $note = 'Brand "' . $oldName . '" updated to "' . $brand->name . '" by ' . ($user->name ?? 'Unknown User');
-
-            BrandLog::create([
-                'note' => $note,
-                'brand_id' => $brand->id,
-                'brand_name' => $brand->name, // ✅ Store updated name
-                'user_id' => Auth::id(),
-            ]);
-
-            DB::commit();
-            return redirect()->back()->with('success', 'Brand updated successfully.');
-
-        } catch (Exception $e) {
-            DB::rollBack();
-
-            Log::error('Brand update failed: ' . $e->getMessage());
-
-            return redirect()->back()->with('error', 'Something went wrong! Please try again.');
-        }
+    $brand = Brand::find($id);
+    if (!$brand) {
+        return redirect()->back()->with('error', 'Brand not found.');
     }
+
+    // 🔍 Get current brand translation to ignore in unique validation
+    $currentTranslation = BrandTranslation::where('brand_id', $id)
+        ->where('lang', $locale)
+        ->where('user_id', Auth::id())
+        ->first();
+
+    // ✅ Validate with correct unique rule on translation table
+    $request->validate([
+        'name' => [
+            'required', 'string', 'max:255',
+            Rule::unique('brand_translations', 'name')
+                ->ignore($currentTranslation?->id)
+                ->where(function ($query) use ($locale) {
+                    $query->where('lang', $locale)
+                        ->where('user_id', Auth::id())
+                        ->whereNull('deleted_at');
+                }),
+        ],
+        'description' => 'nullable|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $oldName = $brand->name;
+
+        $updateData = [
+            'name' => $request->name,
+            'description' => $request->description,
+            'slug' => \Str::slug($request->name),
+        ];
+
+        // 🖼️ Handle image replacement
+        if ($request->hasFile('image')) {
+            if ($brand->image && Storage::disk('public')->exists($brand->image)) {
+                Storage::disk('public')->delete($brand->image);
+            }
+
+            $originalName = $request->file('image')->getClientOriginalName();
+            $filename = pathinfo($originalName, PATHINFO_FILENAME) . '_' . substr(md5(uniqid()), 0, 6) . '.' . pathinfo($originalName, PATHINFO_EXTENSION);
+            $imagePath = $request->file('image')->storeAs('brands', $filename, 'public');
+            $updateData['image'] = $imagePath;
+        }
+
+        $brand->update($updateData);
+
+        // 📝 Log the update
+        $user = Auth::user();
+        $note = 'Brand "' . $oldName . '" updated to "' . $brand->name . '" by ' . ($user->name ?? 'Unknown User');
+        BrandLog::create([
+            'note' => $note,
+            'brand_id' => $brand->id,
+            'brand_name' => $brand->name,
+            'user_id' => $user->id,
+        ]);
+
+        // 🔁 Dispatch translation job
+        TranslateBrand::dispatch($brand);
+
+        DB::commit();
+        return redirect()->back()->with('success', 'Brand updated successfully.');
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        \Log::error('Brand update failed: ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Something went wrong! Please try again.');
+    }
+}
+
 
     public function destroy($id)
     {
         $brand = Brand::find($id);
+
         if ($brand) {
             $user = Auth::user();
+
+            // 📝 Log the deletion
             $note = 'Brand "' . $brand->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
             BrandLog::create([
                 'note' => $note,
@@ -160,10 +226,24 @@ class BrandController extends Controller
                 'brand_id' => $brand->id,
                 'user_id' => Auth::id(),
             ]);
-            $brand->delete();
+
+            // 🗑️ Delete image from storage
+            if ($brand->image && Storage::disk('public')->exists($brand->image)) {
+                Storage::disk('public')->delete($brand->image);
+            }
+
+            // 🧹 Delete related products
             $brand->products()->delete();
+
+            // 🧹 Delete brand translations
+            $brand->brand_translations()->delete();
+
+            // 💥 Delete the brand itself
+            $brand->delete();
+
             return redirect()->back()->with('success', 'Brand deleted successfully.');
         }
+
         return redirect()->back()->with('error', 'Brand not found.');
     }
     public function brand_log(){

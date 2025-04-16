@@ -117,46 +117,70 @@ class CategoryController extends Controller
 
 
 
-    public function destroy($id)
-    {
-        $category = Category::find($id);
-        if ($category) {
-            $user = Auth::user();
-            $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
-            CategoryLog::create([
-                'note' => $note,
-                'category_name' => $category->name,
-                'category_id' => $category->id,
-                'user_id' => Auth::id(),
-            ]);
-            $category->delete();
-            $category->brands()->delete();
-            $category->category_translations()->delete();
-            return redirect()->back()->with('success', 'category deleted successfully.');
+public function destroy($id)
+{
+    $category = Category::find($id);
+
+    if ($category) {
+        $user = Auth::user();
+
+        // 🧼 Log the deletion
+        $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
+        CategoryLog::create([
+            'note' => $note,
+            'category_name' => $category->name,
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+        ]);
+
+        // 🗑️ Delete image file if it exists
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
         }
 
-        return redirect()->back()->with('error', 'category not found.');
+        // 💥 Delete relations and category itself
+        $category->brands()->delete();
+        $category->category_translations()->delete();
+        $category->delete();
+
+        return redirect()->back()->with('success', 'Category deleted successfully.');
     }
+
+    return redirect()->back()->with('error', 'Category not found.');
+}
 
     public function update(Request $request, $id)
     {
-        $request->validate([
-            'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('category_translations', 'name')
-                    ->where('user_id', Auth::id())
-                    ->whereNull('deleted_at')
-                    ->ignore($id),
-            ],
-            'description' => 'nullable|string',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
+        $locale = session('locale', App::getLocale());
 
+        // 🔍 Find category
         $category = Category::find($id);
 
         if (!$category) {
             return redirect()->back()->with('error', 'Category not found.');
         }
+
+        // 🔍 Get the current translation row (needed for unique ignore)
+        $currentTranslation = CategoryTranslation::where('category_id', $id)
+            ->where('lang', $locale)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        // ✅ Validate input
+        $request->validate([
+            'name' => [
+                'required', 'string', 'max:255',
+                Rule::unique('category_translations', 'name')
+                    ->ignore($currentTranslation?->id) // ✅ this must be a translation ID
+                    ->where(function ($query) use ($locale) {
+                        $query->where('lang', $locale)
+                              ->where('user_id', Auth::id())
+                              ->whereNull('deleted_at');
+                    }),
+            ],
+            'description' => 'required|string',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
 
         DB::beginTransaction();
         try {

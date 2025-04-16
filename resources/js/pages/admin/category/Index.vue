@@ -209,7 +209,7 @@ const openImagePreview = (imagePath: string) => {
                                 {{ index + 1 }}
                             </template>
                             <template v-if="column.dataIndex === 'image'">
-                                <div class="flex flex-col items-center">
+                                <div >
                                     <img
                                         v-if="record.image"
                                         :src="'/storage/' + record.image"
