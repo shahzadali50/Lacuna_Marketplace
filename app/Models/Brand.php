@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\BrandTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ class Brand extends Model
         'slug',
         'description',
         'user_id',
+        'image',
         'category_id',
     ];
 
@@ -33,14 +35,20 @@ class Brand extends Model
 {
     return $this->hasMany(Product::class, 'brand_id');
 }
+public function brand_translations(){
+    return $this->hasMany(BrandTranslation::class);
+}
 protected static function boot()
 {
     parent::boot();
+
+
 
     static::deleting(function ($brand) {
         foreach ($brand->products as $product) {
             $product->delete();
         }
     });
+
 }
 }

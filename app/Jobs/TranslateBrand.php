@@ -2,51 +2,57 @@
 
 namespace App\Jobs;
 
-use App\Models\Category;
-use App\Models\CategoryTranslation;
+use App\Models\Brand;
+use App\Models\BrandTranslation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Stichoza\GoogleTranslate\GoogleTranslate;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Stichoza\GoogleTranslate\GoogleTranslate;
 
-class TranslateCategory implements ShouldQueue
+class TranslateBrand implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected Category $category;
+    protected Brand $brand;
     protected string $originalLang;
 
-    public function __construct(Category $category)
+    /**
+     * Create a new job instance.
+     */
+    public function __construct(Brand $brand)
     {
-        $this->category = $category;
-        $this->originalLang = session('locale', App::getLocale()); // e.g. pt, en, ja
+        $this->brand = $brand;
+        $this->originalLang = session('locale', App::getLocale()); // Detect current language
     }
 
+    /**
+     * Execute the job.
+     */
     public function handle(): void
     {
         $allLanguages = ['en', 'pt', 'ja'];
         $userLang = $this->originalLang;
 
-        // 1. Save original (user-submitted) values as-is
+        // Step 1: Save original as-is
         $this->storeTranslation(
             lang: $userLang,
-            name: $this->category->name,
-            description: $this->category->description ?? ''
+            name: $this->brand->name,
+            description: $this->brand->description ?? ''
         );
 
-        // 2. Translate to the other two languages
+        // Step 2: Translate to other languages
         foreach ($allLanguages as $lang) {
             if ($lang === $userLang) continue;
 
             try {
                 $translator = new GoogleTranslate($lang);
 
-                $translatedName = $translator->translate($this->category->name);
-                $translatedDescription = $translator->translate($this->category->description ?? '');
+                $translatedName = $translator->translate($this->brand->name);
+                $translatedDescription = $translator->translate($this->brand->description ?? '');
 
                 $this->storeTranslation(
                     lang: $lang,
@@ -54,22 +60,22 @@ class TranslateCategory implements ShouldQueue
                     description: $translatedDescription
                 );
             } catch (\Throwable $e) {
-                Log::error("Category ID {$this->category->id} [$userLang ➝ $lang] translation failed: " . $e->getMessage());
+                Log::error("Brand ID {$this->brand->id} [$userLang ➝ $lang] translation failed: " . $e->getMessage());
             }
         }
     }
 
+    /**
+     * Save brand translation for a given language.
+     */
     protected function storeTranslation(string $lang, string $name, string $description): void
     {
-        CategoryTranslation::updateOrCreate(
-            [
-                'category_id' => $this->category->id,
-                'lang' => $lang,
-            ],
+        BrandTranslation::updateOrCreate(
+            ['brand_id' => $this->brand->id, 'lang' => $lang],
             [
                 'name' => $name,
                 'description' => $description,
-                'user_id' => $this->category->user_id,
+                'user_id' => $this->brand->user_id,
             ]
         );
     }

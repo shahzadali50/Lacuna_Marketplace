@@ -8,6 +8,7 @@ use App\Models\Brand;
 use App\Models\BrandLog;
 use App\Models\Category;
 use Illuminate\Support\Str;
+use App\Jobs\TranslateBrand;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -50,47 +51,53 @@ class BrandController extends Controller
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('brands', 'name')->whereNull('deleted_at'),
+                Rule::unique('brand_translations', 'name')->where('user_id', Auth::id())->whereNull('deleted_at'),
             ],
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
+            'image' => 'required|image|mimes:jpeg,png,jpg,webp|max:2048',
         ]);
+
         DB::beginTransaction();
 
         try {
+            // Upload image
+            $image = $request->file('image');
+            $imageName = time() . '_' . $image->getClientOriginalName();
+            $imagePath = $image->storeAs('brands', $imageName, 'public');
+
+            // Create brand
             $brand = Brand::create([
                 'user_id' => Auth::id(),
                 'name' => $request->name,
                 'slug' => Str::slug($request->name),
                 'description' => $request->description,
                 'category_id' => $request->category_id,
-
+                'image' => $imagePath,
             ]);
 
-            if ($brand) {
-                $user = Auth::user();
-                $note = 'Brand "' . $brand->name . '" created by ' . ($user->name ?? 'Unknown User');
+            // Log brand creation
+            $user = Auth::user();
+            BrandLog::create([
+                'note' => 'Brand "' . $brand->name . '" created by ' . ($user->name ?? 'Unknown'),
+                'brand_id' => $brand->id,
+                'brand_name' => $brand->name,
+                'user_id' => $user->id,
+            ]);
 
-                BrandLog::create([
-                    'note' => $note,
-                    'brand_id' => $brand->id,
-                    'brand_name' => $brand->name,
-                    'user_id' => Auth::id(),
-                ]);
-            }
+            // Dispatch translation job for the brand
+            TranslateBrand::dispatch($brand);
 
             DB::commit();
             return redirect()->back()->with('success', 'Brand created successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // 🛠 Debugging: Log error
             Log::error('Brand creation failed: ' . $e->getMessage());
-
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
+
 
     public function update(Request $request, $id)
     {

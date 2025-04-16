@@ -48,6 +48,7 @@ const brandForm = useForm({
     name: '',
     description: '',
     category_id: null,
+    image: null as File | null,
 });
 
 const isAddCategoryModalVisible = ref(false);
@@ -68,6 +69,15 @@ const handleImageChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     if (target.files && target.files[0]) {
         form.image = target.files[0];
+        // Create preview URL
+        imagePreview.value = URL.createObjectURL(target.files[0]);
+    }
+};
+
+const handleBrandImageChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        brandForm.image = target.files[0];
         // Create preview URL
         imagePreview.value = URL.createObjectURL(target.files[0]);
     }
@@ -329,7 +339,7 @@ const openImagePreview = (imagePath: string) => {
         <a-modal v-model:open="isbrandModalVisible" :title="translations.add_brand || 'Add Brand'" @cancel="isbrandModalVisible = false"
             :footer="null">
             <h4 class="text-md">{{ translations.category || 'Category' }} ({{ selectedCategoryName }})</h4>
-            <form @submit.prevent="saveBrand()">
+            <form @submit.prevent="saveBrand()" enctype="multipart/form-data">
                 <a-input hidden v-model:value="brandForm.category_id" class="mt-2 w-full" :placeholder="translations.name_placeholder || 'Enter Name'" />
                 <div class="mb-4">
                     <label class="block">{{ translations.name || 'Name' }}</label>
@@ -341,6 +351,17 @@ const openImagePreview = (imagePath: string) => {
                     <a-textarea v-model:value="brandForm.description" class="mt-2 w-full" :placeholder="translations.eneter_description || 'Enter Description'"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="brandForm.errors.description" class="text-red-500">{{ brandForm.errors.description }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block">{{ translations.image || 'Image' }}</label>
+                    <input type="file" @change="handleBrandImageChange" accept="image/*"
+                        class="mt-2 w-full p-2 border rounded" />
+                    <div v-if="brandForm.errors.image" class="text-red-500">{{ brandForm.errors.image }}</div>
+                    <!-- Image Preview -->
+                    <div v-if="imagePreview" class="mt-2">
+                        <p class="text-sm text-gray-600 mb-1">{{ translations.preview || 'Preview' }}:</p>
+                        <img :src="imagePreview" alt="Image Preview" class="w-24 h-24 object-cover rounded border" />
                     </div>
                 </div>
                 <div class="text-right">
