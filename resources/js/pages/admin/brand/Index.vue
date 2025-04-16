@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import AdminLayout from "@/layouts/AdminLayout.vue";
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
 import { Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 const isLoading = ref(false);
 import { ref, computed } from "vue";
 
+const page = usePage();
 
+const translations = computed(() => {
+    return page.props.translations?.dashboard_all_pages || {};
+});
 
-
-
-const columns = [
-    { title: "Sr.", dataIndex: "id", key: "id" },
-    { title: "Image", dataIndex: "image", key: "image" },
-    { title: "Name", dataIndex: "name", key: "name" },
-    { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Created At", dataIndex: "created_at", key: "created_at" },
-    { title: "Action", dataIndex: "action", key: "action" },
-];
+const columns = computed(() => [
+    { title: translations.value.sr || 'Sr.', dataIndex: 'id', key: 'id' },
+    { title: translations.value.image || 'Image', dataIndex: 'image', key: 'image' },
+    { title: translations.value.name || 'Name', dataIndex: 'name', key: 'name' },
+    { title: translations.value.description || 'Description', dataIndex: 'description', key: 'description' },
+    { title: translations.value.category || 'Category', dataIndex: 'category', key: 'category' },
+    { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
+    { title: translations.value.action || 'Action', dataIndex: 'action', key: 'action' },
+]);
 const formatDate = (date: string) => {
     return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
 };
@@ -52,6 +54,8 @@ const editForm = useForm({
     id: null,
     name: "",
     description: "",
+    image: null as File | null,
+    _method: 'PUT'
 });
 const productForm = useForm({
     id: null,
@@ -97,6 +101,9 @@ const openEditModal = (brands: any) => {
     editForm.id = brands.id;
     editForm.name = brands.name;
     editForm.description = brands.description;
+    editForm.image = null; // Reset image when opening modal
+    currentImage.value = brands.image; // Store the current image path
+    editImagePreview.value = ''; // Reset preview
     isEditModalVisible.value = true;
 };
 const imagePreview = ref(null);
@@ -154,6 +161,18 @@ const openImagePreview = (imagePath: string) => {
     previewImageUrl.value = '/storage/' + imagePath;
     isImagePreviewModalVisible.value = true;
 };
+
+const editImagePreview = ref('');
+const currentImage = ref('');
+
+const handleEditImageChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        editForm.image = target.files[0];
+        // Create preview URL
+        editImagePreview.value = URL.createObjectURL(target.files[0]);
+    }
+};
 </script>
 <template>
     <div v-if="isLoading" class="loading-overlay">
@@ -166,11 +185,11 @@ const openImagePreview = (imagePath: string) => {
             <a-col :xs="24">
                 <div class="bg-white p-4  rounded-lg responsive-table">
                     <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold mb-4">Brand List</h2>
+                        <h2 class="text-lg font-semibold mb-4"> {{ translations.brand_title || 'Brand List' }}</h2>
                         <div>
-                            <a-button @click="openAddBrandModal()" type="default">Add Brand</a-button>
+                            <a-button @click="openAddBrandModal()" type="default"> {{ translations.add_brand || 'Add Brand' }}</a-button>
                             <Link :href="route('user.brand-log')">
-                            <a-button type="default">Brand Logs</a-button>
+                            <a-button type="default"> {{ translations.brand_logs || 'Brand Logs' }}</a-button>
                             </Link>
                         </div>
                     </div>
@@ -201,23 +220,23 @@ const openImagePreview = (imagePath: string) => {
                             </template>
                             <template v-else-if="column.dataIndex === 'action'">
                                 <a-tooltip placement="top">
-                                    <template #title>Delete</template>
+                                    <template #title>{{ translations.delete || 'Delete' }}</template>
                                     <a-button type="link" @click="deleteBrand(record.id)"><i
                                             class="fa fa-trash text-red-500" aria-hidden="true"></i></a-button>
                                 </a-tooltip>
                                 <a-tooltip placement="top">
-                                    <template #title>Edit</template>
+                                    <template #title>{{ translations.edit || 'Edit' }}</template>
                                     <a-button type="link" @click="openEditModal(record)"><i
                                             class="fa fa-pencil-square-o text-s text-green-500"
                                             aria-hidden="true"></i></a-button>
                                 </a-tooltip>
                                 <a-tooltip placement="top">
-                                    <template #title>Add Product</template>
+                                    <template #title> {{ translations.add_product || 'Add Product' }}</template>
                                     <a-button type="link" @click="openProductModal(record)"><i
                                             class="fa fa-product-hunt text-green-500" aria-hidden="true"></i></a-button>
                                 </a-tooltip>
                                 <a-tooltip placement="top">
-                                    <template #title>Product list</template>
+                                    <template #title> {{ translations.product_list || 'Product List' }}</template>
                                     <Link :href="route('user.related-product-list', record.slug)"
                                         class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
                                         aria-hidden="true"></i></Link>
@@ -230,11 +249,11 @@ const openImagePreview = (imagePath: string) => {
         </a-row>
 
         <!-- Add Brand Modal -->
-        <a-modal v-model:open="isAddBrandModalVisible" title="Add Brand" @cancel="isAddBrandModalVisible = false"
+        <a-modal v-model:open="isAddBrandModalVisible" :title="translations.add_brand || 'Add Brand'" @cancel="isAddBrandModalVisible = false"
             :footer="null">
             <form @submit.prevent="saveBrand()" enctype="multipart/form-data">
                 <div class="mb-4">
-                    <label class="block">Category</label>
+                    <label class="block">{{ translations.category || 'Category' }}</label>
                     <a-select v-model:value="form.category_id" show-search placeholder="Select a Category"
                         class="mt-2 w-full" :options="categoryOptions" :filter-option="filterOption"></a-select>
                     <div v-if="form.errors.category_id" class="text-red-500">
@@ -242,14 +261,14 @@ const openImagePreview = (imagePath: string) => {
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block">Name</label>
+                    <label class="block">{{ translations.name || 'Name' }}</label>
                     <a-input v-model:value="form.name" class="mt-2 w-full" placeholder="Enter Name" />
                     <div v-if="form.errors.name" class="text-red-500">
                         {{ form.errors.name }}
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block">Description</label>
+                    <label class="block">{{ translations.description || 'Description' }}</label>
                     <a-textarea v-model:value="form.description" class="mt-2 w-full" placeholder="Description"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="form.errors.description" class="text-red-500">
@@ -257,7 +276,7 @@ const openImagePreview = (imagePath: string) => {
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block">Image</label>
+                    <label class="block">{{ translations.image || 'Image' }}</label>
                     <input type="file" @change="handleBrandImageChange" accept="image/*"
                         class="mt-2 w-full p-2 border rounded" />
                     <div v-if="form.errors.image" class="text-red-500">{{ form.errors.image }}</div>
@@ -268,35 +287,55 @@ const openImagePreview = (imagePath: string) => {
                     </div>
                 </div>
                 <div class="text-right">
-                    <a-button type="default" @click="isAddBrandModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">Add</a-button>
+                    <a-button type="default" @click="isAddBrandModalVisible = false">{{ translations.cancel || 'Cancel' }}</a-button>
+                    <a-button type="primary" html-type="submit" class="ml-2">{{ translations.save || 'Save' }}</a-button>
                 </div>
             </form>
 
         </a-modal>
 
-        <!-- Edit Category Modal -->
-        <a-modal v-model:open="isEditModalVisible" title="Edit Brand" @cancel="isEditModalVisible = false"
+        <!-- Edit Brand Modal -->
+        <a-modal v-model:open="isEditModalVisible" :title="translations.update || 'Edit Brand'" @cancel="isEditModalVisible = false"
             :footer="null">
-            <form @submit.prevent="updateBrand()">
+            <form @submit.prevent="updateBrand()" enctype="multipart/form-data">
                 <div class="mb-4">
-                    <label class="block">Name</label>
-                    <a-input v-model:value="editForm.name" class="mt-2 w-full" placeholder="Enter Name" />
+                    <label class="block">{{ translations.name || 'Name' }}</label>
+                    <a-input v-model:value="editForm.name" class="mt-2 w-full" :placeholder="translations.name_placeholder || 'Enter Name'" />
                     <div v-if="editForm.errors.name" class="text-red-500">
                         {{ editForm.errors.name }}
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block">Description</label>
-                    <a-textarea v-model:value="editForm.description" class="mt-2 w-full" placeholder="Description"
+                    <label class="block">{{ translations.description || 'Description' }}</label>
+                    <a-textarea v-model:value="editForm.description" class="mt-2 w-full" :placeholder="translations.eneter_description || 'Enter Description'"
                         :auto-size="{ minRows: 2, maxRows: 5 }" />
                     <div v-if="editForm.errors.description" class="text-red-500">
                         {{ editForm.errors.description }}
                     </div>
                 </div>
+                <div class="mb-4">
+                    <label class="block">{{ translations.image || 'Image' }}</label>
+                    <div v-if="currentImage" class="mb-2">
+                        <p class="text-sm text-gray-500 mb-1">{{ translations.current_image || 'Current Image' }}</p>
+                        <img :src="'/storage/' + currentImage" alt="Current Brand Image"
+                            class="w-24 h-24 object-cover rounded border" />
+                    </div>
+                    <input type="file" @change="handleEditImageChange" accept="image/*"
+                        class="mt-2 w-full p-2 border rounded" />
+                    <div v-if="editForm.errors.image" class="text-red-500">{{ editForm.errors.image }}</div>
+                    <div class="mt-2 text-sm text-gray-500">
+                        {{ translations.keep_current_image || 'Leave empty to keep the current image' }}
+                    </div>
+                    <!-- New Image Preview -->
+                    <div v-if="editImagePreview" class="mt-2">
+                        <p class="text-sm text-gray-600 mb-1">{{ translations.new_image_preview || 'New Image Preview' }}:</p>
+                        <img :src="editImagePreview" alt="New Image Preview"
+                            class="w-24 h-24 object-cover rounded border" />
+                    </div>
+                </div>
                 <div class="text-right">
-                    <a-button type="default" @click="isEditModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">Update</a-button>
+                    <a-button type="default" @click="isEditModalVisible = false">{{ translations.cancel || 'Cancel' }}</a-button>
+                    <a-button type="primary" html-type="submit" class="ml-2">{{ translations.update || 'Update' }}</a-button>
                 </div>
             </form>
         </a-modal>
@@ -329,7 +368,7 @@ const openImagePreview = (imagePath: string) => {
             </form>
         </a-modal>
         <!-- Image Preview Modal -->
-        <a-modal v-model:open="isImagePreviewModalVisible" title="Image Preview"
+        <a-modal v-model:open="isImagePreviewModalVisible"   :title="translations.preview || 'Image Preview'"
             @cancel="isImagePreviewModalVisible = false" :footer="null" width="600px">
             <div class="flex justify-center p-4">
                 <img :src="previewImageUrl" alt="Full Size Image" class="max-w-full max-h-[500px] object-cover" />
