@@ -65,14 +65,14 @@ const productForm = useForm({
 });
 const deleteBrand = (id: number) => {
     Modal.confirm({
-        title: "Are you sure you want to delete this Brand?",
-        content: "This action cannot be undone.",
-        okText: "Yes, Delete",
+        title: translations.value.confirm_delete_title || 'Are you sure you want to delete',
+        content: translations.value.delete_brand_warning || 'This action cannot be undone.',
+        okText: translations.value.confirm_delete_ok || 'Yes, Delete',
         okType: "danger",
-        cancelText: "Cancel",
+        cancelText: translations.value.confirm_delete_cancel || 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route("admin.brand.delete", id), {
+            form.delete(route("admin.brand.delete", { id: id }), {
                 onSuccess: () => {
 
                 },

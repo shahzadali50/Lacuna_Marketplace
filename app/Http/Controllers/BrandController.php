@@ -63,21 +63,55 @@ class BrandController extends Controller
     }
 }
 
-    public function related_brand_list($slug)
-    {
+public function related_brand_list($slug)
+{
+    try {
+        $locale = session('locale', App::getLocale());
+
+        // Get the category by slug
         $category = Category::where('slug', $slug)->first();
 
-        if ($category) {
-            $brands = $category->brands()
-                ->with(['user', 'category'])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-
-            return Inertia::render('admin/brand/CategoryBrandList', compact('brands', 'category'));
-        } else {
+        if (!$category) {
             return redirect()->back()->with('error', 'Record Not Found');
         }
+
+        // Load related brands with translations, user, category
+        $brands = $category->brands()
+            ->with([
+                'brand_translations' => fn($query) => $query->where('lang', $locale),
+                'user',
+                'category'
+            ])
+            ->orderByDesc('created_at')
+            ->paginate(10);
+
+        // Apply fallback logic for translated name/description
+        $brands->getCollection()->transform(fn($brand) => [
+            'id' => $brand->id,
+            'slug' => $brand->slug,
+            'image' => $brand->image,
+            'created_at' => $brand->created_at->format('Y-m-d H:i'),
+            'name' => $brand->brand_translations->first()?->name ?? $brand->name,
+            'description' => $brand->brand_translations->first()?->description ?? $brand->description,
+            'category_name' => $brand->category?->name ?? 'N/A',
+            'user_name' => $brand->user?->name ?? 'N/A',
+        ]);
+
+        return Inertia::render('admin/brand/CategoryBrandList', [
+            'brands' => $brands,
+            'category' => $category,
+            'translations' => __('messages'),
+            'locale' => $locale,
+        ]);
+
+    } catch (\Throwable $e) {
+        \Log::error("Failed to load brands for category slug [$slug]: " . $e->getMessage());
+
+        return redirect()->back()->with('error', 'Something went wrong while loading related brands.');
     }
+}
+
+
     public function store(Request $request)
     {
         $request->validate([

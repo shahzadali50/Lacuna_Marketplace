@@ -16,10 +16,7 @@ use App\Models\CategoryTranslation;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
-use Stichoza\GoogleTranslate\GoogleTranslate;
 
-// this below pakage is used for automatically translate👇
-// composer require stichoza/google-translate-php
 
 
 

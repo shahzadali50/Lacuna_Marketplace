@@ -169,5 +169,7 @@ return [
         'select_category' => 'Selecione uma Categoria',
         'description_placeholder' => 'Digite a Descrição',
         'add_brand_modal_title' => 'Adicionar Marca',
+        'back' => 'Voltar',
+        'all_brand_list' => 'Lista de Todas as Marcas',
     ],
 ];

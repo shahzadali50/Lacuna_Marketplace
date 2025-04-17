@@ -166,5 +166,7 @@ return [
         'select_category' => 'カテゴリーを選択',
         'description_placeholder' => '説明を入力',
         'add_brand_modal_title' => 'ブランドを追加',
+        'back' => '戻る',
+        'all_brand_list' => 'すべてのブランド一覧',
     ],
 ];

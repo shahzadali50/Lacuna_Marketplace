@@ -169,5 +169,8 @@ return [
         'select_category' => 'Select a Category',
         'description_placeholder' => 'Enter Description',
         'add_brand_modal_title' => 'Add Brand',
+        'back' => 'Back',
+        'all_brand_list' => 'All Brand List',
+       
     ],
 ];
