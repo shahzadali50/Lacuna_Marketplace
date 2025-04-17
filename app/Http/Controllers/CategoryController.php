@@ -119,34 +119,36 @@ class CategoryController extends Controller
 
 public function destroy($id)
 {
-    $category = Category::find($id);
+    $category = Category::with([
+        'brands.products.purchaseProducts',
+        'brands.brand_translations',
+        'category_translations'
+    ])->find($id);
 
-    if ($category) {
-        $user = Auth::user();
-
-        // 🧼 Log the deletion
-        $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
-        CategoryLog::create([
-            'note' => $note,
-            'category_name' => $category->name,
-            'category_id' => $category->id,
-            'user_id' => $user->id,
-        ]);
-
-        // 🗑️ Delete image file if it exists
-        if ($category->image && Storage::disk('public')->exists($category->image)) {
-            Storage::disk('public')->delete($category->image);
-        }
-
-        // 💥 Delete relations and category itself
-        $category->brands()->delete();
-        $category->category_translations()->delete();
-        $category->delete();
-
-        return redirect()->back()->with('success', 'Category deleted successfully.');
+    if (!$category) {
+        return redirect()->back()->with('error', 'Category not found.');
     }
 
-    return redirect()->back()->with('error', 'Category not found.');
+    $user = Auth::user();
+
+    // 🧼 Log deletion
+    $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
+    CategoryLog::create([
+        'note' => $note,
+        'category_name' => $category->name,
+        'category_id' => $category->id,
+        'user_id' => $user->id,
+    ]);
+
+    // 🗑️ Delete category image
+    if ($category->image && Storage::disk('public')->exists($category->image)) {
+        Storage::disk('public')->delete($category->image);
+    }
+
+    // 💥 Delete the category (triggers cascading in model)
+    $category->delete();
+
+    return redirect()->back()->with('success', 'Category deleted successfully.');
 }
 
     public function update(Request $request, $id)

@@ -42,13 +42,17 @@ protected static function boot()
 {
     parent::boot();
 
-
-
     static::deleting(function ($brand) {
+        // Delete all related products
         foreach ($brand->products as $product) {
             $product->delete();
         }
-    });
 
+        // Delete all related brand translations
+        foreach ($brand->brand_translations as $translation) {
+            $translation->delete();
+        }
+    });
 }
+
 }

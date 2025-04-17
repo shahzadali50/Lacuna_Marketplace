@@ -27,22 +27,35 @@ class Category extends Model
     	return $this->hasMany(CategoryTranslation::class);
     }
     protected static function boot()
-{
-    parent::boot();
+    {
+        parent::boot();
 
-    static::deleting(function ($category) {
-        foreach ($category->brands as $brand) {
-            foreach ($brand->products as $product) {
-                // Delete all purchase products related to this product
-                $product->purchaseProducts()->delete();
+        static::deleting(function ($category) {
+            foreach ($category->brands as $brand) {
+                // Delete brand translations
+                foreach ($brand->brand_translations as $translation) {
+                    $translation->delete();
+                }
 
-                // Delete the product
-                $product->delete();
+                // Delete products and purchaseProducts
+                foreach ($brand->products as $product) {
+                    $product->purchaseProducts()->delete();
+                    $product->delete();
+                }
+
+                // Delete brand image if needed (optional)
+                if ($brand->image && \Storage::disk('public')->exists($brand->image)) {
+                    \Storage::disk('public')->delete($brand->image);
+                }
+
+                $brand->delete();
             }
 
-            // Delete the brand after its products are deleted
-            $brand->delete();
-        }
-    });
-}
+            // Delete category translations
+            foreach ($category->category_translations as $translation) {
+                $translation->delete();
+            }
+        });
+    }
+
 }
