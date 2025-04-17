@@ -147,7 +147,7 @@ const saveBrand = () => {
             isbrandModalVisible.value = false;
             if (imagePreview.value) {
                 URL.revokeObjectURL(imagePreview.value); // Clean up the object URL
-                imagePreview.value = null;
+                imagePreview.value = '';
             }
         },
         onFinish: () => {
