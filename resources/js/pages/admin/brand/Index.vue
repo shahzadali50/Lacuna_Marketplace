@@ -105,11 +105,7 @@ const openEditModal = (brands: any) => {
     currentImage.value = brands.image; // Store the current image path
     editImagePreview.value = ''; // Reset preview
     isEditModalVisible.value = true;
-    console.log('Submitting editForm:', {
-    name: editForm.name,
-    description: editForm.description,
-    image: editForm.image
-})
+    
 };
 const imagePreview = ref(null);
 const handleBrandImageChange = (e: Event) => {

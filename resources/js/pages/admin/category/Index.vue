@@ -145,6 +145,10 @@ const saveBrand = () => {
         onSuccess: () => {
             brandForm.reset();
             isbrandModalVisible.value = false;
+            if (imagePreview.value) {
+                URL.revokeObjectURL(imagePreview.value); // Clean up the object URL
+                imagePreview.value = null;
+            }
         },
         onFinish: () => {
             isLoading.value = false;
