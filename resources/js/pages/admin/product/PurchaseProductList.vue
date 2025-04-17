@@ -48,7 +48,7 @@ const deletePurchaseProduct = (id: number) => {
         cancelText: 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('user.purchase.product.delete', id), {
+            form.delete(route('admin.purchase.product.delete', id), {
                 onSuccess: () => {
 
                 },
@@ -81,7 +81,7 @@ const openPurchaseDetailModal  =()=>{
 }
 const savePurchaseProduct = () => {
     isLoading.value = true;
-    purchaseProductForm.post(route("user.purchase.product.detail.store"), {
+    purchaseProductForm.post(route("admin.purchase.product.detail.store"), {
         onSuccess: () => {
             isPurchaseProductModalVisible.value = false;
             purchaseProductForm.reset();
@@ -102,7 +102,7 @@ const showEditPurchaseModal  =(purchaseProduct:any)=>{
 // Update brand
 const updatePurchaseDetails = () => {
     isLoading.value = true;
-    purchaseProductEditForm .put(route('user.purchase.product.update', purchaseProductEditForm .id), {
+    purchaseProductEditForm .put(route('admin.purchase.product.update', purchaseProductEditForm .id), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -127,10 +127,10 @@ const updatePurchaseDetails = () => {
 
                         <div>
                             <a-button class="mx-2" type="default" @click="openPurchaseDetailModal()">Add Purchase Detail</a-button>
-                            <Link :href="route('user.products')">
+                            <Link :href="route('admin.products')">
                             <a-button class="mx-2" type="default">Back</a-button>
                         </Link>
-                        <Link :href="route('user.purchase.product.log')" >
+                        <Link :href="route('admin.purchase.product.log')" >
                             <a-button class="mx-2" type="default">purchase products logs</a-button>
                         </Link>
                         </div>

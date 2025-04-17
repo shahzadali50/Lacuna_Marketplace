@@ -37,7 +37,7 @@ const deletePurchaseProduct = (id: number) => {
         cancelText: 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('user.purchase.product.delete', id), {
+            form.delete(route('admin.purchase.product.delete', id), {
                 onSuccess: () => {
 
                 },
@@ -67,7 +67,7 @@ const showEditPurchaseModal  =(purchaseProduct:any)=>{
 // Update brand
 const updatePurchaseDetails = () => {
     isLoading.value = true;
-    purchaseProductEditForm .put(route('user.purchase.product.update', purchaseProductEditForm .id), {
+    purchaseProductEditForm .put(route('admin.purchase.product.update', purchaseProductEditForm .id), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -91,10 +91,10 @@ const updatePurchaseDetails = () => {
                         <h2 class="text-lg font-semibold">Purchase Product List - ( {{ product.name }})</h2>
 
                         <div>
-                            <Link :href="route('user.products')">
+                            <Link :href="route('admin.products')">
                             <a-button class="mx-2" type="default">Back</a-button>
                         </Link>
-                        <Link :href="route('user.products')" >
+                        <Link :href="route('admin.products')" >
                             <a-button class="mx-2" type="default">All purchase products List</a-button>
                         </Link>
                         </div>

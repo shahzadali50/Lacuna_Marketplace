@@ -52,56 +52,56 @@ watch(currentPath, (newUrl) => {
         <div class="scrollbar" id="style-2">
         <a-menu v-model:selectedKeys="selectedKeys" class="force-overflow">
             <!-- Dashboard -->
-            <a-menu-item key="1" :class="{ 'active': currentPath.startsWith(route('user.dashboard', {}, false)) }">
-                <Link :href="route('user.dashboard')">
+            <a-menu-item key="1" :class="{ 'active': currentPath.startsWith(route('admin.dashboard', {}, false)) }">
+                <Link :href="route('admin.dashboard')">
                 <DatabaseOutlined />
                 <span>{{ translations.dashboard || 'Dashboard' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Categories -->
-            <a-menu-item key="2"  :class="{ 'active': currentPath.startsWith(route('user.categories', {}, false)) }">
-                <Link :href="route('user.categories')">
+            <a-menu-item key="2"  :class="{ 'active': currentPath.startsWith(route('admin.categories', {}, false)) }">
+                <Link :href="route('admin.categories')">
                 <AppstoreOutlined  />
                 <span>{{ translations.categories || 'Categories' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Brands -->
-            <a-menu-item key="3" :class="{ 'active': currentPath.startsWith(route('user.brands', {}, false)) }">
-                <Link :href="route('user.brands')">
+            <a-menu-item key="3" :class="{ 'active': currentPath.startsWith(route('admin.brands', {}, false)) }">
+                <Link :href="route('admin.brands')">
                 <TrademarkCircleOutlined  />
                 <span>{{ translations.brands || 'Brands' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Products -->
-            <a-menu-item key="4" :class="{ 'active': currentPath.startsWith(route('user.products', {}, false)) }">
-                <Link :href="route('user.products')">
+            <a-menu-item key="4" :class="{ 'active': currentPath.startsWith(route('admin.products', {}, false)) }">
+                <Link :href="route('admin.products')">
                 <ShoppingOutlined />
                 <span>{{ translations.products || 'Products' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Purchase Products -->
-            <a-menu-item key="5" :class="{ 'active': currentPath.startsWith(route('user.purchase.product.list', {}, false)) }">
-                <Link :href="route('user.purchase.product.list')">
+            <a-menu-item key="5" :class="{ 'active': currentPath.startsWith(route('admin.purchase.product.list', {}, false)) }">
+                <Link :href="route('admin.purchase.product.list')">
                 <ShoppingCartOutlined  />
                 <span>{{ translations.purchase_products || 'Purchase Products' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Get Orders -->
-            <a-menu-item key="6" :class="{ 'active': currentPath.startsWith(route('user.order.create', {}, false)) }">
-                <Link :href="route('user.order.create')">
+            <a-menu-item key="6" :class="{ 'active': currentPath.startsWith(route('admin.order.create', {}, false)) }">
+                <Link :href="route('admin.order.create')">
                 <FileTextOutlined  />
                 <span>{{ translations.get_orders || 'Get Orders' }}</span>
                 </Link>
             </a-menu-item>
 
             <!-- Order List -->
-            <a-menu-item key="7" :class="{ 'active': currentPath.startsWith(route('user.order.list', {}, false)) }">
-                <Link :href="route('user.order.list')">
+            <a-menu-item key="7" :class="{ 'active': currentPath.startsWith(route('admin.order.list', {}, false)) }">
+                <Link :href="route('admin.order.list')">
                 <OrderedListOutlined  />
                 <span>{{ translations.order_list || 'Order List' }}</span>
                 </Link>

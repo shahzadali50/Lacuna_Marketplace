@@ -72,7 +72,7 @@ const deleteBrand = (id: number) => {
         cancelText: "Cancel",
         onOk() {
             isLoading.value = true;
-            form.delete(route("user.brand.delete", id), {
+            form.delete(route("admin.brand.delete", id), {
                 onSuccess: () => {
 
                 },
@@ -122,7 +122,7 @@ const handleBrandImageChange = (e: Event) => {
 };
 const saveBrand = () => {
     isLoading.value = true;
-    form.post(route("user.brand.store"), {
+    form.post(route("admin.brand.store"), {
         onSuccess: () => {
             form.reset();
             isAddBrandModalVisible.value = false;
@@ -135,7 +135,7 @@ const saveBrand = () => {
 // Update brand
 const updateBrand = () => {
     isLoading.value = true;
-    editForm.post(route("user.brand.update", editForm.id), {
+    editForm.post(route("admin.brand.update", { id: editForm.id }), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -152,7 +152,7 @@ const openProductModal = (record: any) => {
 };
 const saveProduct = () => {
     isLoading.value = true;
-    productForm.post(route("user.product.store"), {
+    productForm.post(route("admin.product.store"), {
         onSuccess: () => {
             productForm.reset();
             isproductModalVisible.value = false;
@@ -186,7 +186,7 @@ const handleEditImageChange = (e: Event) => {
     </div>
     <AdminLayout>
 
-        <Head title="Brands" />
+        <Head :title="translations.brand_title || 'Brand List'" />
         <a-row>
             <a-col :xs="24">
                 <div class="bg-white p-4  rounded-lg responsive-table">
@@ -194,7 +194,7 @@ const handleEditImageChange = (e: Event) => {
                         <h2 class="text-lg font-semibold mb-4"> {{ translations.brand_title || 'Brand List' }}</h2>
                         <div>
                             <a-button @click="openAddBrandModal()" type="default"> {{ translations.add_brand || 'Add Brand' }}</a-button>
-                            <Link :href="route('user.brand-log')">
+                            <Link :href="route('admin.brand-log')">
                             <a-button type="default"> {{ translations.brand_logs || 'Brand Logs' }}</a-button>
                             </Link>
                         </div>
@@ -243,7 +243,7 @@ const handleEditImageChange = (e: Event) => {
                                 </a-tooltip>
                                 <a-tooltip placement="top">
                                     <template #title> {{ translations.product_list || 'Product List' }}</template>
-                                    <Link :href="route('user.related-product-list', record.slug)"
+                                    <Link :href="route('admin.related-product-list', record.slug)"
                                         class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
                                         aria-hidden="true"></i></Link>
                                 </a-tooltip>

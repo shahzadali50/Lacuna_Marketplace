@@ -44,7 +44,7 @@ const deleteProduct = (id: number) => {
         cancelText: 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('user.product.delete', id), {
+            form.delete(route('admin.product.delete', id), {
                 onSuccess: () => {
                 },
                 onFinish: () => {
@@ -95,7 +95,7 @@ const openPurchaseDetailModal = (product: any) => {
 // saveProduct
 const saveProduct = () => {
     isLoading.value = true;
-    addProductForm.post(route('user.product.store'), {
+    addProductForm.post(route('admin.product.store'), {
         onSuccess: () => {
             addProductForm.reset();
             isAddProductModalVisible.value = false;
@@ -108,7 +108,7 @@ const saveProduct = () => {
 // Update brand
 const updateProduct = () => {
     isLoading.value = true;
-    editForm.put(route('user.product.update', editForm.id), {
+    editForm.put(route('admin.product.update', editForm.id), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -119,7 +119,7 @@ const updateProduct = () => {
 };
 const savePurchaseProductDetail = () => {
     isLoading.value = true;
-    purchaseDetailForm.post(route('user.purchase.product.detail.store'), {
+    purchaseDetailForm.post(route('admin.purchase.product.detail.store'), {
         onSuccess: () => {
             purchaseDetailForm.reset();
             isPurchaseModalVisible.value = false;
@@ -149,7 +149,7 @@ const savePurchaseProductDetail = () => {
                             <a-button class="mx-2" type="default" @click="openAddProductModal()">
                                 Add Product
                             </a-button>
-                            <Link :href="route('user.product-log')">
+                            <Link :href="route('admin.product-log')">
                             <a-button class="mx-2" type="default">Product Logs</a-button>
                             </Link>
                         </div>
@@ -194,7 +194,7 @@ const savePurchaseProductDetail = () => {
                                 </a-tooltip>
                                 <a-tooltip placement="top">
                                     <template #title>Purchase Product List</template>
-                                    <Link :href="route('user.related.purchase.product.list', record.slug)"
+                                    <Link :href="route('admin.related.purchase.product.list', record.slug)"
                                         class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
                                         aria-hidden="true"></i></Link>
                                 </a-tooltip>

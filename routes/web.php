@@ -35,7 +35,7 @@ Route::get('/lang/{locale}', function ($locale) {
     return redirect()->back();
 })->name('language.switch');
 
-Route::middleware(['auth', 'user', 'verified'])->name('user.')->group(function () {
+Route::middleware(['auth', 'admin', 'verified'])->name('admin.')->group(function () {
     Route::get('cache-clear', [MainController::class, 'cacheClear'])->name('cache.clear');
     Route::get('user/dashboard', [MainController::class, 'dashboard'])->name('dashboard');
     Route::get('categories', [CategoryController::class, 'index'])->name('categories');
@@ -66,6 +66,10 @@ Route::middleware(['auth', 'user', 'verified'])->name('user.')->group(function (
     Route::get('order/list', [OrderController::class, 'orderList'])->name('order.list');
     Route::post('order/store', [OrderController::class, 'store'])->name('order.store');
 });
+
+
+Route::get('lacuna-migrate', [MainController::class, 'migrate'])->name('migrate');
+Route::get('storage-link', [MainController::class, 'storageLink'])->name('storage.link');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [MainController::class, 'checkRole'])->name('dashboard');

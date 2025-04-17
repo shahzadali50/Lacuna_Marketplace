@@ -29,12 +29,36 @@ class MainController extends Controller
             return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
         }
     }
+    public function migrate()
+    {
+        try {
+            // Run the Artisan command to clear caches
+            Artisan::call('migrate');
+            // Return success message using Inertia flash data
+            Log::info('Database migrated successfully.');
+            return redirect()->back()->with('success', 'Database migrated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Migration error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Migration failed: ' . $e->getMessage());
+        }
+    }
+        public function storageLink()
+        {
+            try {
+                Artisan::call('storage:link');
+                Log::info('Storage link created successfully.');
+                return redirect()->back()->with('success', 'Storage link created successfully.');
+            } catch (\Exception $e) {
+                Log::error('Storage link error: ' . $e->getMessage());
+                return redirect()->back()->with('error', 'Storage link failed: ' . $e->getMessage());
+            }
+        }
     public function checkRole()
     {
         if (auth()->check()) {
-            if (auth()->user()->role == "user") {
+            if (auth()->user()->role == "admin") {
 
-                return redirect()->route('user.dashboard');
+                return redirect()->route('admin.dashboard');
             } else {
 
                 return redirect()->route('profile.edit');
@@ -74,4 +98,4 @@ class MainController extends Controller
             ]);
         }
     }
- 
+

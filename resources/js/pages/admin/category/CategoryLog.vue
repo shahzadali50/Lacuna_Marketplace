@@ -38,11 +38,11 @@ defineProps({
                 <div class="bg-white rounded-lg responsive-table p-4 shadow-md">
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Category Logs</h2>
-                        <Link :href="route('user.categories')" >
+                        <Link :href="route('admin.categories')" >
                             <a-button type="default">Back</a-button>
                         </Link>
                     </div>
-                    
+
                     <a-table  v-if="CategoryLog" :columns="columns" :data-source="CategoryLog.data" rowKey="id" id="datatable">
                         <template #bodyCell="{ column, record,index  }">
                             <template v-if="column.dataIndex === 'id'">

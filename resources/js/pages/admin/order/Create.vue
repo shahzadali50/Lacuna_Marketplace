@@ -123,7 +123,7 @@ const submitOrder = () => {
         })),
     };
 
-    router.post(route('user.order.store'), payload, {
+    router.post(route('admin.order.store'), payload, {
         onSuccess: () => {
             orderItems.value = [];
             customerName.value = '';

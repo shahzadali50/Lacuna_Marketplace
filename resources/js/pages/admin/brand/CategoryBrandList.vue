@@ -35,7 +35,7 @@ const deleteBrand = (id: number) => {
         cancelText: 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('user.brand.delete', id), {
+            form.delete(route('admin.brand.delete', id), {
                 onSuccess: () => {
                 },
                 onFinish: () => {
@@ -60,7 +60,7 @@ const openEditModal =(brands:any)=>{
 // Update brand
 const updateBrand = () => {
     isLoading.value = true;
-    editForm.put(route('user.brand.update', editForm.id), {
+    editForm.put(route('admin.brand.update', editForm.id), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -82,13 +82,13 @@ const updateBrand = () => {
                         <h2 class="text-lg font-semibold">Brand List - {{ category.name }}</h2>
 
                         <div>
-                            <Link :href="route('user.categories')">
+                            <Link :href="route('admin.categories')">
                             <a-button class="mx-2" type="default">Back</a-button>
                         </Link>
-                        <Link :href="route('user.brand-log')">
+                        <Link :href="route('admin.brand-log')">
                             <a-button class="mx-2" type="default">Brand Logs</a-button>
                         </Link>
-                        <Link :href="route('user.brands')" >
+                        <Link :href="route('admin.brands')" >
                             <a-button class="mx-2" type="default">All Brand List</a-button>
                         </Link>
                         </div>

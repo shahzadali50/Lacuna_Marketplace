@@ -29,7 +29,7 @@ defineProps({
                 <div class="bg-white rounded-lg p-4 shadow-md responsive-table">
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Brand Logs</h2>
-                        <Link :href="route('user.brands')" >
+                        <Link :href="route('admin.brands')" >
                             <a-button type="default">Brand List</a-button>
                         </Link>
 

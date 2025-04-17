@@ -94,7 +94,7 @@ const handleEditImageChange = (e: Event) => {
 
 const saveCategory = () => {
     isLoading.value = true;
-    form.post(route('user.category.store'), {
+    form.post(route('admin.category.store'), {
         onSuccess: () => {
             form.reset();
             isAddCategoryModalVisible.value = false;
@@ -113,7 +113,7 @@ const deleteCategory = (id: number) => {
         cancelText: translations.value.confirm_delete_cancel || 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('user.category.delete', { id: id }), {
+            form.delete(route('admin.category.delete', { id: id }), {
                 onFinish: () => {
                     isLoading.value = false; // ✅ Stop loading
                 }
@@ -141,7 +141,7 @@ const openBrandModal = (record: any) => {
 };
 const saveBrand = () => {
     isLoading.value = true;
-    brandForm.post(route('user.brand.store'), {
+    brandForm.post(route('admin.brand.store'), {
         onSuccess: () => {
             brandForm.reset();
             isbrandModalVisible.value = false;
@@ -155,7 +155,7 @@ const saveBrand = () => {
 // Update category
 const updateCategory = () => {
     isLoading.value = true;
-    editForm.post(route('user.category.update', { id: editForm.id }), {
+    editForm.post(route('admin.category.update', { id: editForm.id }), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -196,7 +196,7 @@ const openImagePreview = (imagePath: string) => {
                             <a-button @click="openAddCategoryModal()" type="default">
                                 {{ translations.add_category || 'Add Category' }}
                             </a-button>
-                            <Link :href="route('user.category.log')">
+                            <Link :href="route('admin.category.log')">
                                 <a-button type="default">
                                     {{ translations.category_logs || 'Category Logs' }}
                                 </a-button>
@@ -248,7 +248,7 @@ const openImagePreview = (imagePath: string) => {
                                 </a-tooltip>
                                 <a-tooltip placement="top">
                                     <template #title>{{ translations.brand_list || 'Brand List' }}</template>
-                                    <Link :href="route('user.related-brand-list', record.slug)"
+                                    <Link :href="route('admin.related-brand-list', record.slug)"
                                         class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
                                         aria-hidden="true"></i></Link>
                                 </a-tooltip>
