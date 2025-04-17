@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\Brand;
 use App\Models\CategoryTranslation;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -31,29 +33,31 @@ class Category extends Model
         parent::boot();
 
         static::deleting(function ($category) {
-            foreach ($category->brands as $brand) {
-                // Delete brand translations
-                foreach ($brand->brand_translations as $translation) {
+            try {
+                foreach ($category->brands as $brand) {
+                    foreach ($brand->brand_translations as $translation) {
+                        $translation->delete();
+                    }
+
+                    foreach ($brand->products as $product) {
+                        $product->purchaseProducts()->delete();
+                        $product->delete();
+                    }
+
+                    if ($brand->image && Storage::disk('public')->exists($brand->image)) {
+                        Storage::disk('public')->delete($brand->image);
+                    }
+
+                    $brand->delete();
+                }
+
+                foreach ($category->category_translations as $translation) {
                     $translation->delete();
                 }
 
-                // Delete products and purchaseProducts
-                foreach ($brand->products as $product) {
-                    $product->purchaseProducts()->delete();
-                    $product->delete();
-                }
-
-                // Delete brand image if needed (optional)
-                if ($brand->image && \Storage::disk('public')->exists($brand->image)) {
-                    \Storage::disk('public')->delete($brand->image);
-                }
-
-                $brand->delete();
-            }
-
-            // Delete category translations
-            foreach ($category->category_translations as $translation) {
-                $translation->delete();
+            } catch (\Throwable $e) {
+                Log::error('Error in Category deleting event: ' . $e->getMessage());
+                throw $e; // important: rethrow to stop deletion if something fails
             }
         });
     }

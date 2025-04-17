@@ -119,37 +119,51 @@ class CategoryController extends Controller
 
 public function destroy($id)
 {
-    $category = Category::with([
-        'brands.products.purchaseProducts',
-        'brands.brand_translations',
-        'category_translations'
-    ])->find($id);
+    DB::beginTransaction();
 
-    if (!$category) {
-        return redirect()->back()->with('error', 'Category not found.');
+    try {
+        $category = Category::with([
+            'brands.products.purchaseProducts',
+            'brands.brand_translations',
+            'category_translations'
+        ])->find($id);
+
+        if (!$category) {
+            return redirect()->back()->with('error', 'Category not found.');
+        }
+
+        $user = Auth::user();
+
+        // 🧼 Log deletion
+        $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
+        CategoryLog::create([
+            'note' => $note,
+            'category_name' => $category->name,
+            'category_id' => $category->id,
+            'user_id' => $user->id,
+        ]);
+
+        // 🗑️ Delete category image
+        if ($category->image && Storage::disk('public')->exists($category->image)) {
+            Storage::disk('public')->delete($category->image);
+        }
+
+        // 💥 Delete the category (boot() method handles full cascade)
+        $category->delete();
+
+        DB::commit();
+
+        return redirect()->back()->with('success', 'Category deleted successfully.');
+    } catch (\Throwable $e) {
+        DB::rollBack();
+
+        \Log::error('Failed to delete category ID ' . $id . ': ' . $e->getMessage());
+
+        return redirect()->back()->with('error', 'An error occurred while deleting the category.');
     }
-
-    $user = Auth::user();
-
-    // 🧼 Log deletion
-    $note = 'Category "' . $category->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
-    CategoryLog::create([
-        'note' => $note,
-        'category_name' => $category->name,
-        'category_id' => $category->id,
-        'user_id' => $user->id,
-    ]);
-
-    // 🗑️ Delete category image
-    if ($category->image && Storage::disk('public')->exists($category->image)) {
-        Storage::disk('public')->delete($category->image);
-    }
-
-    // 💥 Delete the category (triggers cascading in model)
-    $category->delete();
-
-    return redirect()->back()->with('success', 'Category deleted successfully.');
 }
+
+
 
     public function update(Request $request, $id)
     {
