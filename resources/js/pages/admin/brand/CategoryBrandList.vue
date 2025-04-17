@@ -104,31 +104,7 @@ const updateBrand = () => {
     });
 };
 
-const saveBrand = () => {
-    isLoading.value = true;
-    form.post(route('admin.brand.store'), {
-        onSuccess: () => {
-            // Reset form fields
-            form.reset();
-            form.name = '';
-            form.description = '';
-            form.category_id = null;
-            form.image = null;
 
-            // Reset image preview
-            if (imagePreview.value) {
-                URL.revokeObjectURL(imagePreview.value);
-                imagePreview.value = null;
-            }
-
-            // Close modal
-            isAddBrandModalVisible.value = false;
-        },
-        onFinish: () => {
-            isLoading.value = false;
-        }
-    });
-};
 
 </script>
 
