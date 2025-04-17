@@ -105,6 +105,11 @@ const openEditModal = (brands: any) => {
     currentImage.value = brands.image; // Store the current image path
     editImagePreview.value = ''; // Reset preview
     isEditModalVisible.value = true;
+    console.log('Submitting editForm:', {
+    name: editForm.name,
+    description: editForm.description,
+    image: editForm.image
+})
 };
 const imagePreview = ref(null);
 const handleBrandImageChange = (e: Event) => {
@@ -130,7 +135,7 @@ const saveBrand = () => {
 // Update brand
 const updateBrand = () => {
     isLoading.value = true;
-    editForm.put(route("user.brand.update", editForm.id), {
+    editForm.post(route("user.brand.update", editForm.id), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -139,6 +144,7 @@ const updateBrand = () => {
         },
     });
 };
+
 const openProductModal = (record: any) => {
     selectedBrandName.value = record.name;
     productForm.brand_id = record.id;
@@ -298,6 +304,7 @@ const handleEditImageChange = (e: Event) => {
         <a-modal v-model:open="isEditModalVisible" :title="translations.update || 'Edit Brand'" @cancel="isEditModalVisible = false"
             :footer="null">
             <form @submit.prevent="updateBrand()" enctype="multipart/form-data">
+
                 <div class="mb-4">
                     <label class="block">{{ translations.name || 'Name' }}</label>
                     <a-input v-model:value="editForm.name" class="mt-2 w-full" :placeholder="translations.name_placeholder || 'Enter Name'" />

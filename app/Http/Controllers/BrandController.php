@@ -160,7 +160,7 @@ class BrandController extends Controller
                         ->whereNull('deleted_at');
                 }),
         ],
-        'description' => 'nullable|string',
+        'description' => 'required|string',
         'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
     ]);
 
