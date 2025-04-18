@@ -15,9 +15,24 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug');
+            $table->text('description');
+
+            // Foreign keys
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('brand_id')->constrained()->onDelete('cascade');
-            $table->text('description')->nullable();
+            $table->foreignId('category_id')->constrained()->onDelete('cascade');
+
+            // Product details
+            $table->string('thumnail_img');
+            $table->text('gallary_img');
+            $table->integer('stock')->default(0);
+            $table->enum('status', ['active', 'inactive'])->default('active');
+            $table->decimal('purchase_price', 10, 2)->nullable();
+            $table->decimal('sale_price', 10, 2)->nullable();
+            $table->boolean('feature')->default(false);
+            $table->string('barcode')->nullable();
+
+            // Default Laravel timestamps
             $table->timestamps();
             $table->softDeletes();
         });

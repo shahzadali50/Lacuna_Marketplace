@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="{{ asset('admin/assets/css/custom.css') }}">
         <link rel="stylesheet" href="{{ asset('assets/css/color.css') }}">
         <link rel="stylesheet" href="{{ asset('resources/css/datatable.min.css') }}">
-
+        <link rel="stylesheet" href="{{ asset('assets/css/customFrontend.css') }}">
         @routes
         @vite(['resources/js/app.ts'])
         @inertiaHead

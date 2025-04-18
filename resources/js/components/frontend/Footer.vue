@@ -42,7 +42,8 @@ const subscribe = () => {
           <div class="mr-4">
             <CarOutlined class="text-3xl" />
           </div>
-
+          <div>
+            <h3 class="text-lg font-semibold">{{ translations.free_shipping || 'Free Shipping' }}</h3>
             <p class="text-sm text-blue-100">{{ translations.free_shipping_desc || 'On orders over $50' }}</p>
           </div>
         </div>
@@ -70,8 +71,7 @@ const subscribe = () => {
         </div>
       </div>
     </div>
-
-
+  </div>
 
   <!-- Main Footer -->
   <footer class="bg-gray-100 pt-12 pb-8">

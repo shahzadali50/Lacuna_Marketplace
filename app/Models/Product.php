@@ -12,13 +12,24 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Product extends Model
 {
     use SoftDeletes;
+
     protected $fillable = [
         'name',
         'slug',
         'description',
-        'user_id',
         'brand_id',
+        'category_id',
+        'thumnail_img',
+        'gallary_img',
+        'stock',
+        'status',
+        'purchase_price',
+        'sale_price',
+        'feature',
+        'barcode',
+        'user_id'
     ];
+
     public function user()
     {
         return $this->belongsTo(User::class);
