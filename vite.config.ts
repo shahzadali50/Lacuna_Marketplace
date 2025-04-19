@@ -8,7 +8,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/js/app.ts'],
+            input: ['resources/css/app.css', 'resources/js/app.ts'],
             refresh: true,
         }),
         vue({
@@ -29,5 +29,13 @@ export default defineConfig({
         postcss: {
             plugins: [tailwindcss, autoprefixer],
         },
+    },
+    server: {
+        host: '127.0.0.1',
+        port: 5175,
+    },
+    build: {
+        outDir: 'public/build',
+        manifest: true,
     },
 });
