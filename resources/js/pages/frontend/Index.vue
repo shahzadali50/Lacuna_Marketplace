@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import UserLayout from '@/layouts/UserLayout.vue';
 import { Head } from '@inertiajs/vue3';
-import BannerSection from '@/Components/frontend/BannerSection.vue';
-import ProductSection from '@/Components/frontend/ProductSection.vue';
+import BannerSection from '@/components/frontend/BannerSection.vue';
+import ProductSection from '@/components/frontend/ProductSection.vue';
 import { usePage } from '@inertiajs/vue3';
 
 interface PageProps extends Record<string, any> {
