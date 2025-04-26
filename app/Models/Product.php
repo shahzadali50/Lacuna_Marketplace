@@ -27,6 +27,8 @@ class Product extends Model
         'status',
         'purchase_price',
         'sale_price',
+        'discount',
+        'final_price',
         'feature',
         'barcode',
         'user_id'

@@ -27,11 +27,12 @@ return new class extends Migration
             $table->text('gallary_img');
             $table->integer('stock')->default(0);
             $table->enum('status', ['active', 'inactive'])->default('active');
-            $table->decimal('purchase_price', 10, 2)->nullable();
-            $table->decimal('sale_price', 10, 2)->nullable();
+            $table->decimal('purchase_price', 10, 2);
+            $table->decimal('sale_price', 10, 2);
+            $table->integer('discount')->default(0);
+            $table->decimal('final_price', 10, 2);
             $table->boolean('feature')->default(false);
             $table->string('barcode')->nullable();
-
             // Default Laravel timestamps
             $table->timestamps();
             $table->softDeletes();

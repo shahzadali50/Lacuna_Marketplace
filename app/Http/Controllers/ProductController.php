@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Str;
 use Exception;
 use Inertia\Inertia;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductLog;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
@@ -94,41 +94,80 @@ class ProductController extends Controller
                 'max:255',
                 Rule::unique('products', 'name')->whereNull('deleted_at'),
             ],
-            'description' => 'nullable|string',
+            'description' => 'required|string',
             'brand_id' => 'required|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
+            'thumnail_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallary_img.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'stock' => 'required|integer|min:0',
+            'status' => 'required|in:active,inactive',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'discount' => 'nullable|integer|min:0|max:100',
+            'final_price' => 'required|numeric|min:0',
+            'feature' => 'nullable|boolean',
+            'barcode' => 'nullable|string|max:255|unique:products,barcode',
         ]);
+
         DB::beginTransaction();
 
         try {
-           $product= Product::create([
+            // Store thumbnail image
+            $thumbnailPath = $request->file('thumnail_img')->store('products/thumbnails', 'public');
+
+            // Store gallery images
+            $galleryPaths = [];
+            if ($request->hasFile('gallary_img')) {
+                foreach ($request->file('gallary_img') as $image) {
+                    $path = $image->store('products/gallery', 'public');
+                    $galleryPaths[] = $path;
+                }
+            }
+
+            // Create product
+            $product = Product::create([
                 'name' => $request->name,
-                'slug' => Str::slug($request->name),
+                'slug' => \Str::slug($request->name),
                 'description' => $request->description,
                 'brand_id' => $request->brand_id,
+                'category_id' => $request->category_id,
+                'thumnail_img' => $thumbnailPath,
+                'gallary_img' => json_encode($galleryPaths),
+                'stock' => $request->stock,
+                'status' => $request->status,
+                'purchase_price' => $request->purchase_price,
+                'sale_price' => $request->sale_price,
+                'discount' => $request->discount ?? 0,
+                'final_price' => $request->final_price,
+                'feature' => $request->feature ?? false,
+                'barcode' => $request->barcode,
                 'user_id' => Auth::id(),
-
             ]);
 
-            if ($product) {
-                $user = Auth::user();
-                $note = 'Brand "' . $product->name . '" created by ' . ($user->name ?? 'Unknown User');
+            // Create product translation
+            $product->product_translations()->create([
+                'name' => $request->name,
+                'description' => $request->description,
+                'lang' => session('locale', App::getLocale()),
+                'user_id' => Auth::id(),
+            ]);
 
-                ProductLog::create([
-                    'note' => $note,
-                    'product_id' => $product->id,
-                    'product_name' => $product->name,
-                    'user_id' => Auth::id(),
-                ]);
-            }
+            // Create product log
+            $user = Auth::user();
+            $note = 'Product "' . $product->name . '" created by ' . ($user->name ?? 'Unknown User');
+            ProductLog::create([
+                'note' => $note,
+                'product_id' => $product->id,
+                'product_name' => $product->name,
+                'user_id' => Auth::id(),
+            ]);
+
             DB::commit();
             return redirect()->back()->with('success', 'Product created successfully.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
-            // 🛠 Debugging: Log error
-            Log::error('Brand creation failed: ' . $e->getMessage());
-
+            Log::error('Product creation failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
