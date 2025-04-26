@@ -105,7 +105,7 @@ const openEditModal = (brands: any) => {
     currentImage.value = brands.image; // Store the current image path
     editImagePreview.value = ''; // Reset preview
     isEditModalVisible.value = true;
-    
+
 };
 const imagePreview = ref(null);
 const handleBrandImageChange = (e: Event) => {
@@ -255,7 +255,7 @@ const handleEditImageChange = (e: Event) => {
             :footer="null">
             <form @submit.prevent="saveBrand()" enctype="multipart/form-data">
                 <div class="mb-4">
-                    <label class="block">{{ translations.category || 'Category' }}</label>
+                    <label class="block">{{ translations.category || 'Category' }} </label>
                     <a-select v-model:value="form.category_id" show-search placeholder="Select a Category"
                         class="mt-2 w-full" :options="categoryOptions" :filter-option="filterOption"></a-select>
                     <div v-if="form.errors.category_id" class="text-red-500">
