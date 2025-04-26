@@ -104,7 +104,6 @@ const openOrderView = (order: any) => {
                                     <td class="py-2">{{ sale.qty }}</td>
                                     <td class="py-2">{{ sale.total_price }}</td>
                                 </tr>
-
                             </tbody>
                         </table>
                     </div>
