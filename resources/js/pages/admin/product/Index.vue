@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import { Head, Link, useForm } from '@inertiajs/vue3';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Modal } from 'ant-design-vue';
 import dayjs from "dayjs";
 import { ref, computed } from 'vue';
@@ -8,27 +8,51 @@ const isLoading = ref(false);
 const formatDate = (date: string) => {
     return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
 };
+const page = usePage();
+const translations = computed(() => {
+    return page.props.translations?.dashboard_all_pages || {};
+});
 
 // Define table columns
-const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Name', dataIndex: 'name', key: 'name' },
-    { title: 'Description', dataIndex: 'description', key: 'description' },
-    { title: 'Brand', dataIndex: 'brand', key: 'brand' },
-    { title: 'Created At', dataIndex: 'created_at', key: 'created_at' },
-    { title: 'Action', dataIndex: 'action', key: 'action' },
-];
+const columns = computed(() => [
+    { title: translations.value.id || 'ID', dataIndex: 'id', key: 'id' },
+    { title: translations.value.image || 'Image', dataIndex: 'image', key: 'image' },
+    { title: translations.value.name || 'Name', dataIndex: 'name', key: 'name' },
+    { title: translations.value.description || 'Description', dataIndex: 'description', key: 'description' },
+    { title: translations.value.stock || 'Stock', dataIndex: 'stock', key: 'stock' },
+    { title: translations.value.purchase_price || 'Purchase Price', dataIndex: 'purchase_price', key: 'purchase_price' },
+    { title: translations.value.sale_price || 'Sale Price', dataIndex: 'sale_price', key: 'sale_price' },
+    { title: translations.value.brand || 'Brand', dataIndex: 'brand_name', key: 'brand_name' },
+    { title: translations.value.category || 'Category', dataIndex: 'category_name', key: 'category_name' },
+    { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
+    { title: translations.value.action || 'Action', dataIndex: 'action', key: 'action' },
+]);
 
 // Receive brands as a prop from Inertia
-const props = defineProps({
-    products: Object,
-    brands: Array,
-});
+const props = defineProps<{
+    products: { data: Array<any>; current_page: number; per_page: number; total: number };
+    brands: Array<{ id: number; name: string; category_id: number }>;
+    categories: Array<{ id: number; name: string }>;
+}>();
 
 // Convert brands to Ant Design Select options
 const brandOptions = computed(() => {
-    return props.brands?.map((brand: any) => ({ value: brand.id, label: brand.name })) || [];
+    return props.brands
+        ?.filter((brand) => brand.category_id === addProductForm.category_id)
+        .map((brand) => ({
+            value: brand.id,
+            label: brand.name,
+        })) || [];
 });
+
+const categoryOptions = computed(() => {
+    return props.categories?.map((category) => ({
+        value: category.id,
+        label: category.name,
+    })) || [];
+});
+
+
 
 // Search filter function
 const filterOption = (input: string, option: any) => {
@@ -62,6 +86,7 @@ const addProductForm = useForm({
     name: '',
     description: '',
     brand_id: null,
+    category_id: null,
 });
 const editForm = useForm({
     id: null,
@@ -209,36 +234,64 @@ const savePurchaseProductDetail = () => {
             @cancel="isAddProductModalVisible = false" :footer="null">
             <form @submit.prevent="saveProduct">
                 <div class="mb-4">
-                    <label class="block">Brand</label>
-                                    <a-select
-                    v-model:value="addProductForm.brand_id"
-                    show-search
-                    placeholder="Select Brand"
-                    style="width: 100%"
-                    :options="brandOptions"
-                    :filter-option="filterOption"
-                >
-                </a-select>
-                    <div v-if="addProductForm.errors.brand_id" class="text-red-500">{{ addProductForm.errors.brand_id }}
+                    <label class="block">{{ translations.category || 'Category' }}</label>
+                    <a-select
+                        v-model:value="addProductForm.category_id"
+                        show-search
+                        :placeholder="translations.select_category || 'Select Category'"
+                        class="mt-2 w-full"
+                        :options="categoryOptions"
+                        :filter-option="filterOption"
+                    ></a-select>
+                    <div v-if="addProductForm.errors.category_id" class="text-red-500">
+                        {{ addProductForm.errors.category_id }}
                     </div>
                 </div>
                 <div class="mb-4">
-                    <label class="block">Name</label>
-                    <a-input v-model:value="addProductForm.name" class="mt-2 w-full" placeholder="Enter Name" />
-                    <div v-if="addProductForm.errors.name" class="text-red-500">{{ addProductForm.errors.name }}</div>
-                </div>
-                <div class="mb-4">
-                    <label class="block">Description</label>
-                    <a-textarea v-model:value="addProductForm.description" class="mt-2 w-full" placeholder="Description"
-                        :auto-size="{ minRows: 2, maxRows: 5 }" />
-                    <div v-if="addProductForm.errors.description" class="text-red-500">{{
-                        addProductForm.errors.description }}
+                    <label class="block">{{ translations.brand || 'Brand' }}</label>
+                    <a-select
+                        v-model:value="addProductForm.brand_id"
+                        show-search
+                        :placeholder="translations.select_brand || 'Select Brand'"
+                        class="mt-2 w-full"
+                        :options="brandOptions"
+                        :filter-option="filterOption"
+                        :disabled="!addProductForm.category_id"
+                    ></a-select>
+                    <div v-if="addProductForm.errors.brand_id" class="text-red-500">
+                        {{ addProductForm.errors.brand_id }}
                     </div>
                 </div>
-
+                <div class="mb-4">
+                    <label class="block">{{ translations.name || 'Name' }}</label>
+                    <a-input
+                        v-model:value="addProductForm.name"
+                        class="mt-2 w-full"
+                        :placeholder="translations.name_placeholder || 'Enter Name'"
+                    />
+                    <div v-if="addProductForm.errors.name" class="text-red-500">
+                        {{ addProductForm.errors.name }}
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block">{{ translations.description || 'Description' }}</label>
+                    <a-textarea
+                        v-model:value="addProductForm.description"
+                        class="mt-2 w-full"
+                        :placeholder="translations.enter_description || 'Description'"
+                        :auto-size="{ minRows: 2, maxRows: 5 }"
+                    />
+                    <div v-if="addProductForm.errors.description" class="text-red-500">
+                        {{ addProductForm.errors.description }}
+                    </div>
+                </div>
                 <div class="text-right">
-                    <a-button type="default" @click="isAddProductModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">Save</a-button>
+                    <a-button type="default" @click="isAddProductModalVisible = false">
+                        {{ translations.cancel || 'Cancel' }}
+                    </a-button>
+                    <a-button type="primary" html-type="submit" class="ml-2">
+                        {{ translations.save || 'Save' }}
+                    </a-button>
                 </div>
             </form>
         </a-modal>

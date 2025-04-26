@@ -36,7 +36,7 @@ onBeforeUnmount(() => {
     document.removeEventListener("click", closeSidebar);
 });
 const clearCache = () => {
-  router.visit(route('user.cache.clear'), {
+  router.visit(route('admin.cache.clear'), {
     method: 'get',
     preserveScroll: true,
     preserveState: true,

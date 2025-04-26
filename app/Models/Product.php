@@ -4,7 +4,9 @@ namespace App\Models;
 
 use App\Models\User;
 use App\Models\Brand;
+use App\Models\Category;
 use App\Models\PurchaseProduct;
+use App\Models\ProductTranslation;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,9 +41,19 @@ class Product extends Model
     {
         return $this->belongsTo(Brand::class, 'brand_id');
     }
-    public function purchaseProducts()
+    public function category(): BelongsTo
     {
-        return $this->hasMany(PurchaseProduct::class, 'product_id');
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    // public function purchaseProducts()
+    // {
+    //     return $this->hasMany(PurchaseProduct::class, 'product_id');
+    // }
+
+    public function product_translations()
+    {
+        return $this->hasMany(ProductTranslation::class, 'product_id');
     }
 
 
