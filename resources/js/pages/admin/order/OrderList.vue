@@ -40,8 +40,6 @@ const openOrderView = (order: any) => {
                 <div class="bg-white rounded-lg p-4 shadow-md responsive-table">
                     <div class="mb-4 flex items-center justify-between">
                         <h2 class="text-lg font-semibold">Order List</h2>
-
-
                     </div>
 
                     <a-table v-if="orders" :columns="columns" :data-source="orders.data" rowKey="id">
