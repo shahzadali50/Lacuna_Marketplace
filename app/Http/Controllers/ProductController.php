@@ -148,7 +148,11 @@ class ProductController extends Controller
                 'user_id' => Auth::id(),
             ]);  // Create product log
             $user = Auth::user();
-            $note = 'Product "' . $product->name . '" created by ' . ($user->name ?? 'Unknown User');
+            $note = 'Product "' . $product->name . '" created by ' . ($user->name ?? 'Unknown User') .
+                    ' with purchase price: ' . $product->purchase_price .
+                    ', sale price: ' . $product->sale_price .
+                    ', discount: ' . $product->discount . '%' .
+                    ', final price: ' . $product->final_price;
             ProductLog::create([
                 'note' => $note,
                 'product_id' => $product->id,

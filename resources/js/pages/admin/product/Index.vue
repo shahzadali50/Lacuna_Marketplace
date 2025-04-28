@@ -3,7 +3,9 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Modal } from 'ant-design-vue';
 import dayjs from "dayjs";
-import { ref, computed ,watch } from 'vue';
+import { ref, computed, watch } from 'vue';
+import AddProduct from '@/Components/product/AddProduct.vue';
+
 const isLoading = ref(false);
 const formatDate = (date: string) => {
     return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
@@ -238,7 +240,7 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                         <h2 class="text-lg font-semibold">Product List </h2>
 
                         <div>
-                            <a-button class="mx-2" type="default" @click="openAddProductModal()">
+                            <a-button class="mx-2" type="default" @click="isAddProductModalVisible = true">
                                 Add Product
                             </a-button>
                             <Link :href="route('admin.product-log')">
@@ -254,7 +256,7 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                                 {{ index + 1 }}
                             </template>
                             <template v-if="column.dataIndex === 'image'">
-                          
+
                                 <div>
                                     <img v-if="record.thumnail_img" :src="'/storage/' + record.thumnail_img" alt="thumnail_img"
                                         class="w-12 h-12 object-cover rounded mb-1 cursor-pointer hover:opacity-80 transition-opacity" />
@@ -305,260 +307,15 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                 </div>
             </a-col>
         </a-row>
-        <a-modal
-            width="1000px"
-            v-model:open="isAddProductModalVisible"
-            :title="translations.add_product || 'Add Product'"
-            @cancel="isAddProductModalVisible = false"
-            :footer="null"
-        >
-            <form @submit.prevent="saveProduct">
-                <a-row :gutter="16">
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.category || 'Category' }}</label>
-                            <a-select
-                                v-model:value="addProductForm.category_id"
-                                show-search
-                                :placeholder="translations.select_category || 'Select Category'"
-                                class="mt-2 w-full"
-                                :options="categoryOptions"
-                                :filter-option="filterOption"
-                            ></a-select>
-                            <div v-if="addProductForm.errors.category_id" class="text-red-500">
-                                {{ addProductForm.errors.category_id }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.brand || 'Brand' }}</label>
-                            <a-select
-                                v-model:value="addProductForm.brand_id"
-                                show-search
-                                :placeholder="translations.select_brand || 'Select Brand'"
-                                class="mt-2 w-full"
-                                :options="brandOptions"
-                                :filter-option="filterOption"
-                                :disabled="!addProductForm.category_id"
-                            ></a-select>
-                            <div v-if="addProductForm.errors.brand_id" class="text-red-500">
-                                {{ addProductForm.errors.brand_id }}
-                            </div>
-                        </div>
-                    </a-col>
-                </a-row>
-                <a-row :gutter="16">
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.name || 'Name' }}</label>
-                            <a-input
-                                v-model:value="addProductForm.name"
-                                class="mt-2 w-full"
-                                :placeholder="translations.name_placeholder || 'Enter Name'"
-                            />
-                            <div v-if="addProductForm.errors.name" class="text-red-500">
-                                {{ addProductForm.errors.name }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.barcode || 'Barcode' }}</label>
-                            <a-input
-                                v-model:value="addProductForm.barcode"
-                                class="mt-2 w-full"
-                                :placeholder="translations.enter_barcode || 'Enter Barcode'"
-                            />
-                            <div v-if="addProductForm.errors.barcode" class="text-red-500">
-                                {{ addProductForm.errors.barcode }}
-                            </div>
-                        </div>
-                    </a-col>
-                </a-row>
-                <a-row :gutter="16">
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.purchase_price || 'Purchase Price' }}</label>
-                            <a-input-number
-                                v-model:value="addProductForm.purchase_price"
-                                class="mt-2 w-full"
-                                :min="0"
-                                :step="0.01"
-                                :placeholder="translations.enter_purchase_price || 'Enter Purchase Price'"
-                            />
-                            <div v-if="addProductForm.errors.purchase_price" class="text-red-500">
-                                {{ addProductForm.errors.purchase_price }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.sale_price || 'Sale Price' }}</label>
-                            <a-input-number
-                                v-model:value="addProductForm.sale_price"
-                                class="mt-2 w-full"
-                                :min="0"
-                                :step="0.01"
-                                :placeholder="translations.enter_sale_price || 'Enter Sale Price'"
-                            />
-                            <div v-if="addProductForm.errors.sale_price" class="text-red-500">
-                                {{ addProductForm.errors.sale_price }}
-                            </div>
-                        </div>
-                    </a-col>
-                </a-row>
-                <a-row :gutter="16">
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.stock || 'Stock' }}</label>
-                            <a-input-number
-                                v-model:value="addProductForm.stock"
-                                class="mt-2 w-full"
-                                :min="0"
-                                :placeholder="translations.enter_stock || 'Enter Stock'"
-                            />
-                            <div v-if="addProductForm.errors.stock" class="text-red-500">
-                                {{ addProductForm.errors.stock }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.status || 'Status' }}</label>
-                            <a-select
-                                v-model:value="addProductForm.status"
-                                class="mt-2 w-full"
-                                :placeholder="translations.select_status || 'Select Status'"
-                            >
-                                <a-select-option value="active">{{ translations.active || 'Active' }}</a-select-option>
-                                <a-select-option value="inactive">{{ translations.inactive || 'Inactive' }}</a-select-option>
-                            </a-select>
-                            <div v-if="addProductForm.errors.status" class="text-red-500">
-                                {{ addProductForm.errors.status }}
-                            </div>
-                        </div>
-                    </a-col>
-                </a-row>
-                <div class="mb-4">
-                    <label class="block">{{ translations.description || 'Description' }}</label>
-                    <a-textarea
-                        v-model:value="addProductForm.description"
-                        class="mt-2 w-full"
-                        :placeholder="translations.enter_description || 'Description'"
-                        :auto-size="{ minRows: 3, maxRows: 6 }"
-                    />
-                    <div v-if="addProductForm.errors.description" class="text-red-500">
-                        {{ addProductForm.errors.description }}
-                    </div>
-                </div>
-                <a-row :gutter="16">
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.thumbnail_image || 'Thumbnail Image' }}</label>
-                            <input
-                                type="file"
-                                @change="handleThumnailChange"
-                                accept="image/*"
-                                class="mt-2 w-full p-2 border rounded"
-                            />
-                            <div v-if="addProductForm.errors.thumnail_img" class="text-red-500">
-                                {{ addProductForm.errors.thumnail_img }}
-                            </div>
-                            <div v-if="thumnailPreview" class="mt-2">
-                                <p class="text-sm text-gray-600 mb-1">{{ translations.preview || 'Preview' }}</p>
-                                <img
-                                    :src="thumnailPreview"
-                                    alt="Thumbnail Preview"
-                                    class="w-24 h-24 object-cover rounded border"
-                                />
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="12">
-                        <div class="mb-4">
-                            <label class="block">{{ translations.gallery_images || 'Gallery Images' }}</label>
-                            <input
-                                type="file"
-                                multiple
-                                @change="handleGallaryChange"
-                                accept="image/*"
-                                class="mt-2 w-full p-2 border rounded"
-                            />
-                            <div v-if="addProductForm.errors.gallary_img" class="text-red-500">
-                                {{ addProductForm.errors.gallary_img }}
-                            </div>
-                            <div v-if="gallaryPreviews.length" class="mt-2">
-                                <p class="text-sm text-gray-600 mb-1">{{ translations.preview || 'Preview' }}</p>
-                                <div class="flex flex-wrap gap-2">
-                                    <div v-for="(preview, index) in gallaryPreviews" :key="index" class="relative">
-                                        <img
-                                            :src="preview"
-                                            alt="Gallery Preview"
-                                            class="w-24 h-24 object-cover rounded border"
-                                        />
-                                        <button
-                                            @click="removeGalleryImage(index, $event)"
-                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
-                                            type="button"
-                                        >
-                                            <i class="fa fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </a-col>
-                </a-row>
-                <div class="mb-4">
-                    <label class="flex items-center">
-                        <a-checkbox v-model:checked="addProductForm.feature">
-                            {{ translations.featured || 'Featured' }}
-                        </a-checkbox>
-                    </label>
-                    <div v-if="addProductForm.errors.feature" class="text-red-500">
-                        {{ addProductForm.errors.feature }}
-                    </div>
-                </div>
-                <a-row :gutter="16">
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Discount (%)</label>
-                            <a-input-number
-                                v-model:value="addProductForm.discount"
-                                class="mt-2 w-full"
-                                :min="0"
-                                :max="100"
-                                :step="1"
-                            />
-                            <div v-if="addProductForm.errors.discount" class="text-red-500">
-                                {{ addProductForm.errors.discount }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Final Price</label>
-                            <a-input-number
-                                v-model:value="addProductForm.final_price"
-                                class="mt-2 w-full"
-                                :min="0"
-                                :step="0.01"
-                                disabled
-                            />
-                        </div>
-                    </a-col>
-                </a-row>
-                <div class="text-right">
-                    <a-button type="default" @click="isAddProductModalVisible = false">
-                        {{ translations.cancel || 'Cancel' }}
-                    </a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">
-                        {{ translations.save || 'Save' }}
-                    </a-button>
-                </div>
-            </form>
-        </a-modal>
+
+        <AddProduct
+            :is-visible="isAddProductModalVisible"
+            :categories="categories"
+            :brands="brands"
+            :translations="translations"
+            @update:is-visible="isAddProductModalVisible = $event"
+            @success="isAddProductModalVisible = false"
+        />
 
         <!-- Edit Product Modal -->
         <a-modal v-model:open="isEditModalVisible" title="Edit Product" @cancel="isEditModalVisible = false"
