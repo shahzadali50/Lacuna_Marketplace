@@ -378,7 +378,3 @@ const saveProduct = () => {
         </form>
     </a-modal>
 </template>
-
-<style scoped>
-
-</style>

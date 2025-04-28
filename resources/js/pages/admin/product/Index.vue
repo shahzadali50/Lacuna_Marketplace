@@ -4,7 +4,13 @@ import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { Modal } from 'ant-design-vue';
 import dayjs from "dayjs";
 import { ref, computed, watch } from 'vue';
-import AddProduct from '@/Components/product/AddProduct.vue';
+import AddProduct from '@/components/admin/product/AddProduct.vue';
+import EditProduct from '@/components/admin/product/EditProduct.vue';
+
+// Add URL type
+declare const URL: {
+    createObjectURL(file: File): string;
+};
 
 const isLoading = ref(false);
 const formatDate = (date: string) => {
@@ -70,7 +76,7 @@ const deleteProduct = (id: number) => {
         cancelText: 'Cancel',
         onOk() {
             isLoading.value = true;
-            form.delete(route('admin.product.delete', id), {
+            form.delete(route('admin.product.delete', { id: id }), {
                 onSuccess: () => {
                 },
                 onFinish: () => {
@@ -104,63 +110,54 @@ const addProductForm = useForm({
 watch(() => addProductForm.category_id, () => {
     addProductForm.brand_id = null;
 });
-const thumnailPreview = ref<string | null>(null);
-const gallaryPreviews = ref<string[]>([]);
 
-const handleThumnailChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files[0]) {
-        addProductForm.thumnail_img = target.files[0];
-        thumnailPreview.value = URL.createObjectURL(target.files[0]);
-    }
-};
-
-const handleGallaryChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files) {
-        // Append new files to existing ones
-        const newFiles = Array.from(target.files);
-        addProductForm.gallary_img = [...addProductForm.gallary_img, ...newFiles];
-
-        // Create previews for new files and append to existing previews
-        const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
-        gallaryPreviews.value = [...gallaryPreviews.value, ...newPreviews];
-    }
-};
-
-const removeGalleryImage = (index: number, event: Event) => {
-    event.preventDefault();
-    event.stopPropagation();
-    // Remove the file from the form data
-    addProductForm.gallary_img.splice(index, 1);
-    // Remove the preview
-    gallaryPreviews.value.splice(index, 1);
-};
 
 const editForm = useForm({
     id: null,
     name: '',
     description: '',
+    brand_id: null,
+    category_id: null,
+    thumnail_img: null as File | null,
+    gallary_img: [] as (File | string)[],
+    stock: 0,
+    status: "active",
+    purchase_price: null as number | null,
+    sale_price: null as number | null,
+    feature: false,
+    barcode: "",
+    discount: 0,
+    final_price: 0,
 });
 const purchaseDetailForm = useForm({
     id: null,
-    purchase_price: '',
-    sale_price: '',
-    stock: '',
+    purchase_price: null,
+    sale_price: null,
+    stock: null,
     product_id: null,
     description: '',
 });
-const openAddProductModal = () => {
 
-    addProductForm.reset();
-    thumnailPreview.value = null;
-    gallaryPreviews.value = [];
-    isAddProductModalVisible.value = true;
-}
+const selectedProduct = ref<{
+    id: number;
+    name: string;
+    description: string;
+    brand_id: number;
+    category_id: number;
+    thumnail_img: string;
+    gallary_img: string;
+    stock: number;
+    status: string;
+    purchase_price: number;
+    sale_price: number;
+    feature: boolean;
+    barcode: string;
+    discount: number;
+    final_price: number;
+} | null>(null);
+
 const openEditModal = (product: any) => {
-    editForm.id = product.id;
-    editForm.name = product.name;
-    editForm.description = product.description;
+    selectedProduct.value = product;
     isEditModalVisible.value = true;
 }
 const openPurchaseDetailModal = (product: any) => {
@@ -169,28 +166,11 @@ const openPurchaseDetailModal = (product: any) => {
     selectedProductName.value = product.name;
     purchaseDetailForm.product_id = product.id;
 }
-// saveProduct
 
-const saveProduct = () => {
-    isLoading.value = true;
-    addProductForm.post(route("admin.product.store"), {
-        preserveState: true,
-        preserveScroll: true,
-        onSuccess: () => {
-            addProductForm.reset();
-            isAddProductModalVisible.value = false;
-            thumnailPreview.value = null;
-            gallaryPreviews.value = [];
-        },
-        onFinish: () => {
-            isLoading.value = false;
-        },
-    });
-};
 // Update brand
 const updateProduct = () => {
     isLoading.value = true;
-    editForm.put(route('admin.product.update', editForm.id), {
+    editForm.put(route('admin.product.update', { id: editForm.id }), {
         onSuccess: () => {
             isEditModalVisible.value = false;
         },
@@ -223,6 +203,21 @@ const finalPrice = computed(() => {
 watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
     addProductForm.final_price = finalPrice.value;
 });
+
+const handleThumbnailChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files && target.files[0]) {
+        editForm.thumnail_img = target.files[0];
+    }
+};
+
+const handleGalleryChange = (e: Event) => {
+    const target = e.target as HTMLInputElement;
+    if (target.files) {
+        const newFiles = Array.from(target.files);
+        editForm.gallary_img = [...editForm.gallary_img, ...newFiles];
+    }
+};
 
 </script>
 
@@ -317,28 +312,16 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
             @success="isAddProductModalVisible = false"
         />
 
-        <!-- Edit Product Modal -->
-        <a-modal v-model:open="isEditModalVisible" title="Edit Product" @cancel="isEditModalVisible = false"
-            :footer="null">
-            <form @submit.prevent="updateProduct()">
-                <div class="mb-4">
-                    <label class="block">Name</label>
-                    <a-input v-model:value="editForm.name" class="mt-2 w-full" placeholder="Enter Name" />
-                    <div v-if="editForm.errors.name" class="text-red-500">{{ editForm.errors.name }}</div>
-                </div>
-                <div class="mb-4">
-                    <label class="block">Description</label>
-                    <a-textarea v-model:value="editForm.description" class="mt-2 w-full" placeholder="Description"
-                        :auto-size="{ minRows: 2, maxRows: 5 }" />
-                    <div v-if="editForm.errors.description" class="text-red-500">{{ editForm.errors.description }}</div>
-                </div>
-                <div class="text-right">
-                    <a-button type="default" @click="isEditModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">Update</a-button>
-                </div>
-            </form>
+        <EditProduct
+            :is-visible="isEditModalVisible"
+            :product="selectedProduct"
+            :categories="categories"
+            :brands="brands"
+            :translations="translations"
+            @update:is-visible="isEditModalVisible = $event"
+            @success="isEditModalVisible = false"
+        />
 
-        </a-modal>
         <!-- Edit Purchase Product Detail Modal -->
         <a-modal v-model:open="isPurchaseModalVisible" title="Product Purchase Detail"
             @cancel="isPurchaseModalVisible = false" :footer="null">

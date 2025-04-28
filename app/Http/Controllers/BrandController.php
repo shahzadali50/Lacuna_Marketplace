@@ -258,9 +258,15 @@ public function related_brand_list($slug)
 
     public function destroy($id)
     {
-        $brand = Brand::find($id);
+        try {
+            $brand = Brand::find($id);
 
-        if ($brand) {
+            if (!$brand) {
+                return redirect()->back()->with('error', 'Brand not found.');
+            }
+
+            DB::beginTransaction();
+
             $user = Auth::user();
 
             // 📝 Log the deletion
@@ -286,10 +292,14 @@ public function related_brand_list($slug)
             // 💥 Delete the brand itself
             $brand->delete();
 
+            DB::commit();
             return redirect()->back()->with('success', 'Brand deleted successfully.');
-        }
 
-        return redirect()->back()->with('error', 'Brand not found.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            \Log::error('Brand deletion failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong! Please try again.');
+        }
     }
     public function brand_log(){
 

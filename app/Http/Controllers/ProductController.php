@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
@@ -188,7 +189,13 @@ class ProductController extends Controller
     public function destroy($id)
     {
         $product = Product::find($id);
-        if ($product) {
+
+        if (!$product) {
+            return redirect()->back()->with('error', 'Product not found.');
+        }
+
+        DB::beginTransaction();
+        try {
             $user = Auth::user();
             $note = 'Product "' . $product->name . '" Deleted by ' . ($user->name ?? 'Unknown User');
             ProductLog::create([
@@ -197,25 +204,67 @@ class ProductController extends Controller
                 'product_id' => $product->id,
                 'user_id' => Auth::id(),
             ]);
+
+            // Delete old images if they exist
+            if ($product->thumnail_img && Storage::disk('public')->exists($product->thumnail_img)) {
+                Storage::disk('public')->delete($product->thumnail_img);
+            }
+
+            if ($product->gallary_img) {
+                $galleryImages = json_decode($product->gallary_img, true) ?? [];
+                foreach ($galleryImages as $image) {
+                    if ($image && Storage::disk('public')->exists($image)) {
+                        Storage::disk('public')->delete($image);
+                    }
+                }
+            }
+
+            $product->product_translations()->delete();
             $product->delete();
-            $product->purchaseProducts()->delete();
+
+            DB::commit();
             return redirect()->back()->with('success', 'Product deleted successfully.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Product deletion failed: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
-        return redirect()->back()->with('error', 'Product not found.');
     }
 
     public function update(Request $request, $id)
     {
+        $locale = session('locale', App::getLocale());
+
         $request->validate([
             'name' => [
-                'required', 'string', 'max:255',
-                Rule::unique('products', 'name')
-                    ->where('user_id', Auth::id())
-                    ->whereNull('deleted_at')
-                    ->ignore($id),
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('product_translations', 'name')
+                    ->where(function ($query) {
+                        $query->where('lang', app()->getLocale())
+                            ->where('user_id', Auth::id())
+                            ->whereNull('deleted_at');
+                    })
+                    ->ignore($id, 'product_id'),
             ],
-            'description' => 'nullable|string',
+            'description' => 'required|string',
+            'brand_id' => 'required|exists:brands,id',
+            'category_id' => 'required|exists:categories,id',
+            'thumnail_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallary_img' => 'nullable',
+            'gallary_img.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'stock' => 'required|integer|min:0',
+            'status' => 'required|in:active,inactive',
+            'purchase_price' => 'required|numeric|min:0',
+            'sale_price' => 'required|numeric|min:0',
+            'discount' => 'nullable|integer|min:0|max:100',
+            'final_price' => 'required|numeric|min:0',
+            'feature' => 'nullable|boolean',
+            'barcode' => 'nullable|string|max:255|unique:products,barcode,' . $id,
         ]);
+
         $product = Product::find($id);
 
         if (!$product) {
@@ -225,14 +274,60 @@ class ProductController extends Controller
         DB::beginTransaction();
         try {
             $oldName = $product->name;
+
+            // Handle thumbnail image
+            $thumbnailPath = $product->thumnail_img;
+            if ($request->hasFile('thumnail_img')) {
+                // Delete old thumbnail if exists
+                if ($product->thumnail_img && Storage::disk('public')->exists($product->thumnail_img)) {
+                    Storage::disk('public')->delete($product->thumnail_img);
+                }
+                $thumbnailPath = $request->file('thumnail_img')->store('products/thumbnails', 'public');
+            }
+
+            // Handle gallery images
+            $galleryPaths = json_decode($product->gallary_img, true) ?? [];
+            if ($request->hasFile('gallary_img')) {
+                // Delete old gallery images
+                foreach ($galleryPaths as $image) {
+                    if ($image && Storage::disk('public')->exists($image)) {
+                        Storage::disk('public')->delete($image);
+                    }
+                }
+
+                // Store new gallery images
+                $galleryPaths = [];
+                foreach ($request->file('gallary_img') as $image) {
+                    $path = $image->store('products/gallery', 'public');
+                    $galleryPaths[] = $path;
+                }
+            }
+
+            // Update product
             $product->update([
                 'name' => $request->name,
-                'description' => $request->description,
                 'slug' => Str::slug($request->name),
+                'description' => $request->description,
+                'brand_id' => $request->brand_id,
+                'category_id' => $request->category_id,
+                'thumnail_img' => $thumbnailPath,
+                'gallary_img' => json_encode($galleryPaths),
+                'stock' => $request->stock,
+                'status' => $request->status,
+                'purchase_price' => $request->purchase_price,
+                'sale_price' => $request->sale_price,
+                'discount' => $request->discount ?? 0,
+                'final_price' => $request->final_price,
+                'feature' => $request->feature ?? false,
+                'barcode' => $request->barcode,
             ]);
 
             $user = Auth::user();
-            $note = 'Product "' . $oldName . '" updated to "' . $product->name . '" by ' . ($user->name ?? 'Unknown User');
+            $note = 'Product "' . $oldName . '" updated to "' . $product->name . '" by ' . ($user->name ?? 'Unknown User') .
+                    ' with purchase price: ' . $product->purchase_price .
+                    ', sale price: ' . $product->sale_price .
+                    ', discount: ' . $product->discount . '%' .
+                    ', final price: ' . $product->final_price;
 
             ProductLog::create([
                 'note' => $note,
@@ -241,14 +336,15 @@ class ProductController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
+            // Dispatch translation job
+            TranslateProduct::dispatch($product);
+
             DB::commit();
             return redirect()->back()->with('success', 'Product updated successfully.');
 
         } catch (Exception $e) {
             DB::rollBack();
-
-            Log::error('Brand update failed: ' . $e->getMessage());
-
+            Log::error('Product update failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
