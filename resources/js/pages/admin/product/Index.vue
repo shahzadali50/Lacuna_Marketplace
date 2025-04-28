@@ -116,10 +116,25 @@ const handleThumnailChange = (e: Event) => {
 const handleGallaryChange = (e: Event) => {
     const target = e.target as HTMLInputElement;
     if (target.files) {
-        addProductForm.gallary_img = Array.from(target.files);
-        gallaryPreviews.value = Array.from(target.files).map((file) => URL.createObjectURL(file));
+        // Append new files to existing ones
+        const newFiles = Array.from(target.files);
+        addProductForm.gallary_img = [...addProductForm.gallary_img, ...newFiles];
+
+        // Create previews for new files and append to existing previews
+        const newPreviews = newFiles.map((file) => URL.createObjectURL(file));
+        gallaryPreviews.value = [...gallaryPreviews.value, ...newPreviews];
     }
 };
+
+const removeGalleryImage = (index: number, event: Event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    // Remove the file from the form data
+    addProductForm.gallary_img.splice(index, 1);
+    // Remove the preview
+    gallaryPreviews.value.splice(index, 1);
+};
+
 const editForm = useForm({
     id: null,
     name: '',
@@ -244,7 +259,7 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                             <template v-if="column.dataIndex === 'description'">
                                 {{ record.description ? record.description : 'N/A' }}
                             </template>
-                            <template v-if="column.dataIndex === 'brand'">
+                            <template v-else-if="column.dataIndex === 'brand'">
                                 {{ record.brand.slug }}
                             </template>
 
@@ -468,13 +483,20 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                             <div v-if="gallaryPreviews.length" class="mt-2">
                                 <p class="text-sm text-gray-600 mb-1">{{ translations.preview || 'Preview' }}</p>
                                 <div class="flex flex-wrap gap-2">
-                                    <img
-                                        v-for="(preview, index) in gallaryPreviews"
-                                        :key="index"
-                                        :src="preview"
-                                        alt="Gallery Preview"
-                                        class="w-24 h-24 object-cover rounded border"
-                                    />
+                                    <div v-for="(preview, index) in gallaryPreviews" :key="index" class="relative">
+                                        <img
+                                            :src="preview"
+                                            alt="Gallery Preview"
+                                            class="w-24 h-24 object-cover rounded border"
+                                        />
+                                        <button
+                                            @click="removeGalleryImage(index, $event)"
+                                            class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                                            type="button"
+                                        >
+                                            <i class="fa fa-times"></i>
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -494,12 +516,12 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                     <a-col :xs="24" :md="12">
                         <div class="mb-4">
                             <label class="block">Discount (%)</label>
-                            <a-input-number 
-                                v-model:value="addProductForm.discount" 
-                                class="mt-2 w-full" 
-                                :min="0" 
-                                :max="100" 
-                                :step="1" 
+                            <a-input-number
+                                v-model:value="addProductForm.discount"
+                                class="mt-2 w-full"
+                                :min="0"
+                                :max="100"
+                                :step="1"
                             />
                             <div v-if="addProductForm.errors.discount" class="text-red-500">
                                 {{ addProductForm.errors.discount }}
@@ -509,12 +531,12 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                     <a-col :xs="24" :md="12">
                         <div class="mb-4">
                             <label class="block">Final Price</label>
-                            <a-input-number 
-                                v-model:value="addProductForm.final_price" 
-                                class="mt-2 w-full" 
-                                :min="0" 
-                                :step="0.01" 
-                                disabled 
+                            <a-input-number
+                                v-model:value="addProductForm.final_price"
+                                class="mt-2 w-full"
+                                :min="0"
+                                :step="0.01"
+                                disabled
                             />
                         </div>
                     </a-col>

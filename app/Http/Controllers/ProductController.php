@@ -98,6 +98,7 @@ class ProductController extends Controller
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
             'thumnail_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallary_img' => 'required',
             'gallary_img.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
             'stock' => 'required|integer|min:0',
             'status' => 'required|in:active,inactive',
