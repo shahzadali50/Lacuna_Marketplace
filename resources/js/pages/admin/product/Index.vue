@@ -253,6 +253,14 @@ watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
                             <template v-if="column.dataIndex === 'id'">
                                 {{ index + 1 }}
                             </template>
+                            <template v-if="column.dataIndex === 'image'">
+                          
+                                <div>
+                                    <img v-if="record.thumnail_img" :src="'/storage/' + record.thumnail_img" alt="thumnail_img"
+                                        class="w-12 h-12 object-cover rounded mb-1 cursor-pointer hover:opacity-80 transition-opacity" />
+                                    <span v-else class="text-gray-400 mb-1">No Image</span>
+                                </div>
+                            </template>
                             <template v-if="column.dataIndex === 'name'">
                                 {{ record.name }}
                             </template>

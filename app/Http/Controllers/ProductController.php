@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductLog;
 use Illuminate\Http\Request;
+use App\Jobs\TranslateProduct;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
@@ -39,6 +40,8 @@ class ProductController extends Controller
                     'id' => $product->id,
                     'slug' => $product->slug,
                     'name' => $product->product_translations->first()?->name ?? $product->name,
+                    'thumnail_img' => $product->thumnail_img,
+                    'gallary_img' => $product->gallary_img,
                     'description' => $product->product_translations->first()?->description ?? $product->description,
                     'stock' => $product->stock,
                     'purchase_price' => $product->purchase_price,
@@ -143,17 +146,7 @@ class ProductController extends Controller
                 'feature' => $request->feature ?? false,
                 'barcode' => $request->barcode,
                 'user_id' => Auth::id(),
-            ]);
-
-            // Create product translation
-            $product->product_translations()->create([
-                'name' => $request->name,
-                'description' => $request->description,
-                'lang' => session('locale', App::getLocale()),
-                'user_id' => Auth::id(),
-            ]);
-
-            // Create product log
+            ]);  // Create product log
             $user = Auth::user();
             $note = 'Product "' . $product->name . '" created by ' . ($user->name ?? 'Unknown User');
             ProductLog::create([
@@ -162,7 +155,7 @@ class ProductController extends Controller
                 'product_name' => $product->name,
                 'user_id' => Auth::id(),
             ]);
-
+            TranslateProduct::dispatch($product);
             DB::commit();
             return redirect()->back()->with('success', 'Product created successfully.');
 
