@@ -240,7 +240,7 @@ const galleryPreview = ref<string[]>([]);
                             </Link>
                         </div>
                     </div>
-                    <a-table :columns="columns" :data-source="brands.data" rowKey="id">
+                    <a-table :columns="columns" :data-source="brands?.data" rowKey="id">
                         <template #bodyCell="{ column, record, index }">
                             <template v-if="column.dataIndex === 'id'">
                                 {{ index + 1 }}
@@ -398,7 +398,7 @@ const galleryPreview = ref<string[]>([]);
                             <div v-if="productForm.errors.name" class="text-red-500">{{ productForm.errors.name }}</div>
                         </div>
                     </a-col>
-                    
+
                     <a-col :xs="24" :md="12">
                         <div class="mb-4">
                             <label class="block">Barcode</label>

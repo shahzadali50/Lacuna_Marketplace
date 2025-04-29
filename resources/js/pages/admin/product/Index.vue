@@ -7,137 +7,22 @@ import { ref, computed, watch } from 'vue';
 import AddProduct from '@/components/admin/product/AddProduct.vue';
 import EditProduct from '@/components/admin/product/EditProduct.vue';
 
-// Add URL type
+// 1. Type Declarations
 declare const URL: {
     createObjectURL(file: File): string;
 };
 
-const isLoading = ref(false);
-const formatDate = (date: string) => {
-    return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
-};
-const page = usePage();
-const translations = computed(() => {
-    return page.props.translations?.dashboard_all_pages || {};
-});
-
-// Define table columns
-const columns = computed(() => [
-    { title: translations.value.id || 'ID', dataIndex: 'id', key: 'id' },
-    { title: translations.value.image || 'Image', dataIndex: 'image', key: 'image' },
-    { title: translations.value.name || 'Name', dataIndex: 'name', key: 'name' },
-    { title: translations.value.description || 'Description', dataIndex: 'description', key: 'description' },
-    { title: translations.value.stock || 'Stock', dataIndex: 'stock', key: 'stock' },
-    { title: translations.value.purchase_price || 'Purchase Price', dataIndex: 'purchase_price', key: 'purchase_price' },
-    { title: translations.value.sale_price || 'Sale Price', dataIndex: 'sale_price', key: 'sale_price' },
-    { title: translations.value.category || 'Category', dataIndex: 'category_name', key: 'category_name' },
-    { title: translations.value.brand || 'Brand', dataIndex: 'brand_name', key: 'brand_name' },
-    { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
-    { title: translations.value.action || 'Action', dataIndex: 'action', key: 'action' },
-]);
-
-// Receive brands as a prop from Inertia
+// 2. Props Definition
 const props = defineProps<{
     products: { data: Array<any>; current_page: number; per_page: number; total: number };
     brands: Array<{ id: number; name: string; category_id: number }>;
     categories: Array<{ id: number; name: string }>;
 }>();
 
-// Convert brands to Ant Design Select options
-const brandOptions = computed(() => {
-    return props.brands
-        ?.filter((brand) => brand.category_id === addProductForm.category_id)
-        .map((brand) => ({
-            value: brand.id,
-            label: brand.name,
-        })) || [];
-});
-
-const categoryOptions = computed(() => {
-    return props.categories?.map((category) => ({
-        value: category.id,
-        label: category.name,
-    })) || [];
-});
-
-
-
-// Search filter function
-const filterOption = (input: string, option: any) => {
-    return option.label.toLowerCase().includes(input.toLowerCase());
-};
-const form = useForm({});
-const deleteProduct = (id: number) => {
-    Modal.confirm({
-        title: 'Are you sure you want to delete this Product?',
-        content: 'This action cannot be undone.',
-        okText: 'Yes, Delete',
-        okType: 'danger',
-        cancelText: 'Cancel',
-        onOk() {
-            isLoading.value = true;
-            form.delete(route('admin.product.delete', { id: id }), {
-                onSuccess: () => {
-                },
-                onFinish: () => {
-                    isLoading.value = false;
-                }
-            });
-        },
-    });
-};
+// 3. State Management
+const isLoading = ref(false);
 const isAddProductModalVisible = ref(false);
 const isEditModalVisible = ref(false);
-const isPurchaseModalVisible = ref(false);
-const selectedProductName = ref("");
-const addProductForm = useForm({
-    name: "",
-    description: "",
-    brand_id: null,
-    category_id: null,
-    thumnail_img: null as File | null,
-    gallary_img: [] as File[],
-    stock: 0,
-    status: "active",
-    purchase_price: null as number | null,
-    sale_price: null as number | null,
-    feature: false,
-    barcode: "",
-    discount: 0,
-    final_price: 0,
-});
-// Reset brand_id when category_id changes
-watch(() => addProductForm.category_id, () => {
-    addProductForm.brand_id = null;
-});
-
-
-const editForm = useForm({
-    id: null,
-    name: '',
-    description: '',
-    brand_id: null,
-    category_id: null,
-    thumnail_img: null as File | null,
-    gallary_img: [] as (File | string)[],
-    stock: 0,
-    status: "active",
-    purchase_price: null as number | null,
-    sale_price: null as number | null,
-    feature: false,
-    barcode: "",
-    discount: 0,
-    final_price: 0,
-});
-const purchaseDetailForm = useForm({
-    id: null,
-    purchase_price: null,
-    sale_price: null,
-    stock: null,
-    product_id: null,
-    description: '',
-});
-
 const selectedProduct = ref<{
     id: number;
     name: string;
@@ -156,68 +41,61 @@ const selectedProduct = ref<{
     final_price: number;
 } | null>(null);
 
+// 4. Page and Translations
+const page = usePage();
+const translations = computed(() => {
+    return (page.props.translations as any)?.dashboard_all_pages || {};
+});
+
+
+// 6. Computed Properties
+const columns = computed(() => [
+    { title: translations.value.id || 'ID', dataIndex: 'id', key: 'id' },
+    { title: translations.value.image || 'Image', dataIndex: 'image', key: 'image' },
+    { title: translations.value.name || 'Name', dataIndex: 'name', key: 'name' },
+    { title: translations.value.stock || 'Stock', dataIndex: 'stock', key: 'stock' },
+    { title: translations.value.purchase_price || 'Purchase Price', dataIndex: 'purchase_price', key: 'purchase_price' },
+    { title: translations.value.sale_price || 'Sale Price', dataIndex: 'sale_price', key: 'sale_price' },
+    { title: translations.value.discount || 'Discount', dataIndex: 'discount', key: 'discount' },
+    { title: translations.value.final_price || 'Final Price', dataIndex: 'final_price', key: 'final_price' },
+    { title: translations.value.category || 'Category', dataIndex: 'category_name', key: 'category_name' },
+    { title: translations.value.brand || 'Brand', dataIndex: 'brand_name', key: 'brand_name' },
+    { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
+    { title: translations.value.action || 'Action', dataIndex: 'action', key: 'action' },
+]);
+// 7. Helper Functions
+const formatDate = (date: string) => {
+    return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
+};
+
+
+
+// 8. Event Handlers
+const deleteProduct = (id: number) => {
+    Modal.confirm({
+        title: 'Are you sure you want to delete this Product?',
+        content: 'This action cannot be undone.',
+        okText: 'Yes, Delete',
+        okType: 'danger',
+        cancelText: 'Cancel',
+        onOk() {
+            isLoading.value = true;
+            useForm({}).delete(route('admin.product.delete', { id: id }), {
+                onSuccess: () => {
+                },
+                onFinish: () => {
+                    isLoading.value = false;
+                }
+            });
+        },
+    });
+};
+
 const openEditModal = (product: any) => {
     selectedProduct.value = product;
     isEditModalVisible.value = true;
-}
-const openPurchaseDetailModal = (product: any) => {
-    purchaseDetailForm.id = product.id;
-    isPurchaseModalVisible.value = true;
-    selectedProductName.value = product.name;
-    purchaseDetailForm.product_id = product.id;
-}
-
-// Update brand
-const updateProduct = () => {
-    isLoading.value = true;
-    editForm.put(route('admin.product.update', { id: editForm.id }), {
-        onSuccess: () => {
-            isEditModalVisible.value = false;
-        },
-        onFinish: () => {
-            isLoading.value = false;
-        }
-    });
-};
-const savePurchaseProductDetail = () => {
-    isLoading.value = true;
-    purchaseDetailForm.post(route('admin.purchase.product.detail.store'), {
-        onSuccess: () => {
-            purchaseDetailForm.reset();
-            isPurchaseModalVisible.value = false;
-        },
-        onFinish: () => {
-            isLoading.value = false;
-        }
-    });
 };
 
-const finalPrice = computed(() => {
-    if (addProductForm.sale_price && addProductForm.discount) {
-        const discountAmount = (addProductForm.sale_price * addProductForm.discount) / 100;
-        return addProductForm.sale_price - discountAmount;
-    }
-    return addProductForm.sale_price;
-});
-
-watch([() => addProductForm.sale_price, () => addProductForm.discount], () => {
-    addProductForm.final_price = finalPrice.value;
-});
-
-const handleThumbnailChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files[0]) {
-        editForm.thumnail_img = target.files[0];
-    }
-};
-
-const handleGalleryChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files) {
-        const newFiles = Array.from(target.files);
-        editForm.gallary_img = [...editForm.gallary_img, ...newFiles];
-    }
-};
 
 </script>
 
@@ -253,7 +131,8 @@ const handleGalleryChange = (e: Event) => {
                             <template v-if="column.dataIndex === 'image'">
 
                                 <div>
-                                    <img v-if="record.thumnail_img" :src="'/storage/' + record.thumnail_img" alt="thumnail_img"
+                                    <img v-if="record.thumnail_img" :src="'/storage/' + record.thumnail_img"
+                                        alt="thumnail_img"
                                         class="w-12 h-12 object-cover rounded mb-1 cursor-pointer hover:opacity-80 transition-opacity" />
                                     <span v-else class="text-gray-400 mb-1">No Image</span>
                                 </div>
@@ -261,13 +140,27 @@ const handleGalleryChange = (e: Event) => {
                             <template v-if="column.dataIndex === 'name'">
                                 {{ record.name }}
                             </template>
-                            <template v-if="column.dataIndex === 'description'">
-                                {{ record.description ? record.description : 'N/A' }}
+                            <template v-if="column.dataIndex === 'stock'">
+                                {{ record.stock }}
                             </template>
-                            <template v-else-if="column.dataIndex === 'brand'">
-                                {{ record.brand.slug }}
+                            <template v-if="column.dataIndex === 'purchase_price'">
+                                {{ record.purchase_price }}
                             </template>
-
+                            <template v-if="column.dataIndex === 'sale_price'">
+                                {{ record.sale_price }}
+                            </template>
+                            <template v-if="column.dataIndex === 'discount'">
+                                {{ record.discount ? record.discount + '%' : '0%' }}
+                            </template>
+                            <template v-if="column.dataIndex === 'final_price'">
+                                {{ record.final_price || record.sale_price }}
+                            </template>
+                            <template v-if="column.dataIndex === 'category_name'">
+                                {{ record.category_name }}
+                            </template>
+                            <template v-if="column.dataIndex === 'brand_name'">
+                                {{ record.brand_name }}
+                            </template>
                             <template v-else-if="column.dataIndex === 'created_at'">
                                 {{ formatDate(record.created_at) }}
                             </template>
@@ -283,18 +176,8 @@ const handleGalleryChange = (e: Event) => {
                                             class="fa fa-pencil-square-o text-s text-green-500"
                                             aria-hidden="true"></i></a-button>
                                 </a-tooltip>
-                                <a-tooltip placement="top">
-                                    <template #title>Add Purchase Details</template>
-                                    <a-button type="link" @click="openPurchaseDetailModal(record)"><i
-                                            class="fa fa-shopping-cart text-emerald-950"
-                                            aria-hidden="true"></i></a-button>
-                                </a-tooltip>
-                                <a-tooltip placement="top">
-                                    <template #title>Purchase Product List</template>
-                                    <Link :href="route('admin.related.purchase.product.list', record.slug)"
-                                        class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
-                                        aria-hidden="true"></i></Link>
-                                </a-tooltip>
+
+
                             </template>
 
                         </template>
@@ -303,79 +186,18 @@ const handleGalleryChange = (e: Event) => {
             </a-col>
         </a-row>
 
-        <AddProduct
-            :is-visible="isAddProductModalVisible"
-            :categories="categories"
-            :brands="brands"
-            :translations="translations"
-            @update:is-visible="isAddProductModalVisible = $event"
-            @success="isAddProductModalVisible = false"
-        />
+        <AddProduct :is-visible="isAddProductModalVisible" :categories="categories" :brands="brands"
+            :translations="translations" @update:is-visible="isAddProductModalVisible = $event"
+            @success="isAddProductModalVisible = false" />
 
-        <EditProduct
-            :is-visible="isEditModalVisible"
-            :product="selectedProduct"
-            :categories="categories"
-            :brands="brands"
-            :translations="translations"
-            @update:is-visible="isEditModalVisible = $event"
-            @success="isEditModalVisible = false"
-        />
+        <EditProduct :is-visible="isEditModalVisible" :product="selectedProduct" :categories="categories"
+            :brands="brands" :translations="translations" @update:is-visible="isEditModalVisible = $event"
+            @success="isEditModalVisible = false" />
 
-        <!-- Edit Purchase Product Detail Modal -->
-        <a-modal v-model:open="isPurchaseModalVisible" title="Product Purchase Detail"
-            @cancel="isPurchaseModalVisible = false" :footer="null">
-            <h4 class="text-md">Product - ({{ selectedProductName }})</h4>
-            <form @submit.prevent="savePurchaseProductDetail()">
-                <a-input hidden v-model:value="purchaseDetailForm.product_id" class="mt-2 w-full"
-                    placeholder="Enter Name" />
-                <a-row>
-                    <a-col :span="24">
-                        <div class="mb-1">
-                            <label class="block">Purchase Price</label>
-                            <a-input type="number" v-model:value="purchaseDetailForm.purchase_price" class="mt-2 w-full"
-                                placeholder="Enter Purchase Price" />
-                            <div v-if="purchaseDetailForm.errors.purchase_price" class="text-red-500">{{
-                                purchaseDetailForm.errors.purchase_price }}</div>
-                        </div>
 
-                    </a-col>
-                    <a-col :span="24">
-                        <div class="mb-1">
-                            <label class="block">Sale Price</label>
-                            <a-input type="number" v-model:value="purchaseDetailForm.sale_price" class="mt-2 w-full"
-                                placeholder="Enter Purchase Price" />
-                            <div v-if="purchaseDetailForm.errors.sale_price" class="text-red-500">{{
-                                purchaseDetailForm.errors.sale_price }}</div>
-                        </div>
-                    </a-col>
-                    <a-col :span="24">
-                        <div class="mb-1">
-                            <label class="block">Stock</label>
-                            <a-input :min="1" type="number" v-model:value="purchaseDetailForm.stock" class="mt-2 w-full"
-                                placeholder="Enter Purchase Price" />
-                            <div v-if="purchaseDetailForm.errors.stock" class="text-red-500">{{
-                                purchaseDetailForm.errors.stock }}
-                            </div>
-                        </div>
-                    </a-col>
-                    <a-col :span="24">
-                        <div class="mb-4">
-                            <label class="block">Description( Optional)</label>
-                            <a-textarea v-model:value="purchaseDetailForm.description" class="mt-2 w-full"
-                                placeholder="Description" :auto-size="{ minRows: 2, maxRows: 5 }" />
-                            <div v-if="purchaseDetailForm.errors.description" class="text-red-500">{{
-                                purchaseDetailForm.errors.description }}</div>
-                        </div>
-                    </a-col>
-                </a-row>
-
-                <div class="text-right">
-                    <a-button type="default" @click="isPurchaseModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2">Save</a-button>
-                </div>
-            </form>
-
-        </a-modal>
     </AdminLayout>
 </template>
+
+<style scoped>
+
+</style>
