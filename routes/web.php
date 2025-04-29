@@ -54,7 +54,7 @@ Route::middleware(['auth', 'admin', 'verified'])->name('admin.')->group(function
     Route::post('product/store', action: [ProductController::class, 'store'])->name('product.store');
     Route::get('product/list/{slug}', action: [ProductController::class, 'related_product_list'])->name('related-product-list');
     Route::delete('product/delete/{id}', [ProductController::class, 'destroy'])->name('product.delete');
-    Route::put('product/update/{id}', [ProductController::class, 'update'])->name('product.update');
+    Route::post('product/update/{id}', [ProductController::class, 'update'])->name('product.update');
     Route::get('product/logs', [ProductController::class, 'product_log'])->name('product-log');
 
     Route::post('purchase-product-detail/store', [PurchaseProductController::class, 'store'])->name('purchase.product.detail.store');

@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Str;
 use Exception;
 use Inertia\Inertia;
 use App\Models\Brand;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\ProductLog;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use App\Jobs\TranslateProduct;
 use Illuminate\Validation\Rule;
@@ -106,9 +106,9 @@ class ProductController extends Controller
             'description' => 'required|string',
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'thumnail_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumnail_img' => 'required|image|mimes:jpeg,png,jpg,gif|max:1048',
             'gallary_img' => 'required',
-            'gallary_img.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallary_img.*' => 'required|image|mimes:jpeg,png,jpg,gif|max:5048',
             'stock' => 'required|integer|min:0',
             'status' => 'required|in:active,inactive',
             'purchase_price' => 'required|numeric|min:0',
@@ -239,27 +239,25 @@ class ProductController extends Controller
 
     public function update(Request $request, $id)
     {
-        $locale = session('locale', App::getLocale());
+        $product = Product::find($id);
+
+        if (!$product) {
+            return redirect()->back()->with('error', 'Product not found.');
+        }
 
         $request->validate([
             'name' => [
                 'required',
                 'string',
                 'max:255',
-                Rule::unique('product_translations', 'name')
-                    ->where(function ($query) {
-                        $query->where('lang', app()->getLocale())
-                            ->where('user_id', Auth::id())
-                            ->whereNull('deleted_at');
-                    })
-                    ->ignore($id, 'product_id'),
+                Rule::unique('products', 'name')->whereNull('deleted_at')->ignore($id),
             ],
             'description' => 'required|string',
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'thumnail_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'thumnail_img' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1048',
             'gallary_img' => 'nullable',
-            'gallary_img.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'gallary_img.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5048',
             'stock' => 'required|integer|min:0',
             'status' => 'required|in:active,inactive',
             'purchase_price' => 'required|numeric|min:0',
@@ -270,22 +268,16 @@ class ProductController extends Controller
             'barcode' => 'nullable|string|max:255|unique:products,barcode,' . $id,
         ]);
 
-        $product = Product::find($id);
-
-        if (!$product) {
-            return redirect()->back()->with('error', 'Product not found.');
-        }
-
         DB::beginTransaction();
+
         try {
             $oldName = $product->name;
 
             // Handle thumbnail image
             $thumbnailPath = $product->thumnail_img;
             if ($request->hasFile('thumnail_img')) {
-                // Delete old thumbnail if exists
-                if ($product->thumnail_img && Storage::disk('public')->exists($product->thumnail_img)) {
-                    Storage::disk('public')->delete($product->thumnail_img);
+                if ($thumbnailPath && Storage::disk('public')->exists($thumbnailPath)) {
+                    Storage::disk('public')->delete($thumbnailPath);
                 }
                 $thumbnailPath = $request->file('thumnail_img')->store('products/thumbnails', 'public');
             }
@@ -293,18 +285,14 @@ class ProductController extends Controller
             // Handle gallery images
             $galleryPaths = json_decode($product->gallary_img, true) ?? [];
             if ($request->hasFile('gallary_img')) {
-                // Delete old gallery images
                 foreach ($galleryPaths as $image) {
                     if ($image && Storage::disk('public')->exists($image)) {
                         Storage::disk('public')->delete($image);
                     }
                 }
-
-                // Store new gallery images
                 $galleryPaths = [];
                 foreach ($request->file('gallary_img') as $image) {
-                    $path = $image->store('products/gallery', 'public');
-                    $galleryPaths[] = $path;
+                    $galleryPaths[] = $image->store('products/gallery', 'public');
                 }
             }
 
@@ -327,12 +315,13 @@ class ProductController extends Controller
                 'barcode' => $request->barcode,
             ]);
 
+            // Create product log
             $user = Auth::user();
             $note = 'Product "' . $oldName . '" updated to "' . $product->name . '" by ' . ($user->name ?? 'Unknown User') .
-                    ' with purchase price: ' . $product->purchase_price .
-                    ', sale price: ' . $product->sale_price .
-                    ', discount: ' . $product->discount . '%' .
-                    ', final price: ' . $product->final_price;
+                    ' with previous purchase price: ' . $product->getOriginal('purchase_price') . ' -> new: ' . $product->purchase_price .
+                    ', previous sale price: ' . $product->getOriginal('sale_price') . ' -> new: ' . $product->sale_price .
+                    ', previous discount: ' . $product->getOriginal('discount') . '% -> new: ' . $product->discount . '%' .
+                    ', previous final price: ' . $product->getOriginal('final_price') . ' -> new: ' . $product->final_price;
 
             ProductLog::create([
                 'note' => $note,
@@ -341,18 +330,18 @@ class ProductController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            // Dispatch translation job
             TranslateProduct::dispatch($product);
 
             DB::commit();
             return redirect()->back()->with('success', 'Product updated successfully.');
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Product update failed: ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
+
     public function product_log()
     {
         $productLogs = ProductLog::with('user')->where('user_id', Auth::id())->orderBy('created_at', 'desc')->paginate(10);
