@@ -266,6 +266,7 @@ class ProductController extends Controller
             'final_price' => 'required|numeric|min:0',
             'feature' => 'nullable|boolean',
             'barcode' => 'nullable|string|max:255|unique:products,barcode,' . $id,
+            'existing_gallary_img' => 'nullable|array', // ✅ Important for merging
         ]);
 
         DB::beginTransaction();
@@ -283,14 +284,9 @@ class ProductController extends Controller
             }
 
             // Handle gallery images
-            $galleryPaths = json_decode($product->gallary_img, true) ?? [];
+            $galleryPaths = $request->input('existing_gallary_img', []);
+
             if ($request->hasFile('gallary_img')) {
-                foreach ($galleryPaths as $image) {
-                    if ($image && Storage::disk('public')->exists($image)) {
-                        Storage::disk('public')->delete($image);
-                    }
-                }
-                $galleryPaths = [];
                 foreach ($request->file('gallary_img') as $image) {
                     $galleryPaths[] = $image->store('products/gallery', 'public');
                 }
@@ -330,6 +326,7 @@ class ProductController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
+            // Dispatch translation job
             TranslateProduct::dispatch($product);
 
             DB::commit();
@@ -341,6 +338,7 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
+
 
     public function product_log()
     {

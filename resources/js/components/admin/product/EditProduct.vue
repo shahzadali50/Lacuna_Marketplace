@@ -161,7 +161,6 @@ const handleGallaryChange = (e: Event) => {
   }
 };
 
-
 // Remove gallery image
 const removeGalleryImage = (index: number, event: Event) => {
   event.preventDefault();
