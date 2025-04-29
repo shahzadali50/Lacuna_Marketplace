@@ -56,41 +56,59 @@ const editForm = useForm({
   final_price: props.product?.final_price || props.product?.sale_price || 0,
 });
 
-// Watch for product changes to update form
-watch(
-  () => props.product,
-  (newProduct) => {
-    if (newProduct) {
-      editForm.id = newProduct.id;
-      editForm.name = newProduct.name || '';
-      editForm.description = newProduct.description || '';
-      editForm.brand_id = newProduct.brand_id;
-      editForm.category_id = newProduct.category_id;
-      editForm.stock = newProduct.stock || 0;
-      editForm.status = newProduct.status || 'active';
-      editForm.purchase_price = newProduct.purchase_price || 0;
-      editForm.sale_price = newProduct.sale_price || 0;
-      editForm.feature = newProduct.feature || false;
-      editForm.barcode = newProduct.barcode || '';
-      editForm.discount = newProduct.discount || 0;
-      editForm.final_price = newProduct.final_price || newProduct.sale_price || 0;
+// Initialize existing gallery images
+if (props.product?.gallary_img) {
+  try {
+    const parsedImages = JSON.parse(props.product.gallary_img);
+    existingGalleryImages.value = parsedImages;
+    editForm.existing_gallary_img = parsedImages;
+  } catch (e) {
+    console.error('Error parsing gallery images:', e);
+    existingGalleryImages.value = [];
+    editForm.existing_gallary_img = [];
+  }
+}
 
-      // Initialize existing gallery images
-      if (newProduct.gallary_img) {
-        try {
-          const parsedImages = JSON.parse(newProduct.gallary_img);
-          existingGalleryImages.value = parsedImages;
-          editForm.existing_gallary_img = parsedImages;
-        } catch (e) {
-          console.error('Error parsing gallery images:', e);
-          existingGalleryImages.value = [];
-          editForm.existing_gallary_img = [];
-        }
+// Function to handle modal visibility changes
+const handleModalVisibility = (visible: boolean) => {
+  if (visible && props.product) {
+    // Reset form with product data
+    editForm.reset();
+    editForm.id = props.product.id;
+    editForm.name = props.product.name;
+    editForm.description = props.product.description;
+    editForm.brand_id = props.product.brand_id;
+    editForm.category_id = props.product.category_id;
+    editForm.stock = props.product.stock;
+    editForm.status = props.product.status;
+    editForm.purchase_price = props.product.purchase_price;
+    editForm.sale_price = props.product.sale_price;
+    editForm.feature = props.product.feature;
+    editForm.barcode = props.product.barcode;
+    editForm.discount = props.product.discount;
+    editForm.final_price = props.product.final_price || props.product.sale_price;
+
+    // Reset image previews
+    thumnailPreview.value = null;
+    gallaryPreviews.value = [];
+
+    // Initialize gallery images
+    if (props.product.gallary_img) {
+      try {
+        const parsedImages = JSON.parse(props.product.gallary_img);
+        existingGalleryImages.value = parsedImages;
+        editForm.existing_gallary_img = parsedImages;
+      } catch (e) {
+        console.error('Error parsing gallery images:', e);
+        existingGalleryImages.value = [];
+        editForm.existing_gallary_img = [];
       }
     }
-  },
-  { immediate: true }
-);
+  }
+};
+
+// Watch for modal visibility changes
+watch(() => props.isVisible, handleModalVisibility, { immediate: true });
 
 // Reset brand_id when category_id changes and set default brand
 watch(() => editForm.category_id, () => {
@@ -179,6 +197,7 @@ const updateProduct = () => {
   editForm.post(route('admin.product.update', { id: editForm.id }), {
     onSuccess: () => {
       emit('update:isVisible', false);
+      emit('success');
       thumnailPreview.value = null;
       gallaryPreviews.value = [];
     },
