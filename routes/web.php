@@ -10,14 +10,18 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\PurchaseProductController;
 
-Route::get('/', function () {
-    return Inertia::render('frontend/Index', [
-        'title' => 'Home',
-        'description' => 'Welcome to our website!',
-        'translations' => __('messages'),
-        'locale' => App::getLocale(),
-    ]);
-})->name('home');
+// Route::get('/', function () {
+//     return Inertia::render('frontend/Index', [
+//         'title' => 'Home',
+//         'description' => 'Welcome to our website!',
+//         'translations' => __('messages'),
+//         'locale' => App::getLocale(),
+//     ]);
+// })->name('home');
+Route::get('/', [MainController::class, 'index'])->name('home');
+Route::get('/lang/{locale}', [MainController::class, 'switchLanguage'])->name('language.switch');
+
+
 Route::get('/products/{id}', function ($id) {
     return Inertia::render('frontend/products/ProductDetail', [
         'title' => 'Product Detail',
@@ -27,13 +31,6 @@ Route::get('/products/{id}', function ($id) {
         'productId' => $id,
     ]);
 })->name('product.detail');
-
-Route::get('/lang/{locale}', function ($locale) {
-    if (in_array($locale, ['en', 'pt', 'ja'])) {
-        session(['locale' => $locale]);
-    }
-    return redirect()->back();
-})->name('language.switch');
 
 Route::middleware(['auth', 'admin', 'verified'])->name('admin.')->group(function () {
     Route::get('cache-clear', [MainController::class, 'cacheClear'])->name('cache.clear');
@@ -76,9 +73,5 @@ Route::get('storage-link', [MainController::class, 'storageLink'])->name('storag
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', [MainController::class, 'checkRole'])->name('dashboard');
 });
-
-// Add product detail route
-
-
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';

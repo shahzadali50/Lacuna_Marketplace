@@ -16,6 +16,23 @@ use Illuminate\Support\Facades\Artisan;
 class MainController extends Controller
 {
 
+    public function index(){
+        return Inertia::render('frontend/Index', [
+            'title' => 'Home',
+            'description' => 'Welcome to our website!',
+            'translations' => __('messages'),
+            'locale' => App::getLocale(),
+        ]);
+    }
+
+    public function switchLanguage($locale)
+    {
+        if (in_array($locale, ['en', 'pt', 'ja'])) {
+            session(['locale' => $locale]);
+        }
+        return redirect()->back();
+    }
+
     public function cacheClear()
     {
         try {

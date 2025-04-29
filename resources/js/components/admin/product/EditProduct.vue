@@ -211,8 +211,9 @@ const updateProduct = () => {
   <div v-if="isLoading" class="loading-overlay">
     <a-spin size="large" />
   </div>
-  <a-modal
+  <a-modal 
     width="1000px"
+    style="top: 20px"
     :open="isVisible"
     :title="translations.edit_product || 'Edit Product'"
     @update:open="$emit('update:isVisible', $event)"
