@@ -58,7 +58,6 @@ return [
         'price' => 'Price',
         'rating' => 'Rating',
         'seller' => 'Seller',
-        'category' => 'Category',
     ],
 
     'footer' => [

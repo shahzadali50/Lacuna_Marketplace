@@ -17,12 +17,45 @@ class MainController extends Controller
 {
 
     public function index(){
-        return Inertia::render('frontend/Index', [
-            'title' => 'Home',
-            'description' => 'Welcome to our website!',
-            'translations' => __('messages'),
-            'locale' => App::getLocale(),
-        ]);
+        try {
+            $locale = session('locale', App::getLocale());
+
+            // Load products with brand, category, and their translations for current locale
+            $products = Product::where('user_id', Auth::id())
+                ->with([
+                    'category' => fn($q) => $q->with(['category_translations' => fn($q) => $q->where('lang', $locale)]),
+                    'product_translations' => fn($q) => $q->where('lang', $locale),
+                ])
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+
+            // Transform products to include translated fields
+            $products->getCollection()->transform(function ($product) use ($locale) {
+                return [
+                    'id' => $product->id,
+                    'name' => $product->product_translations->first()?->name ?? $product->name,
+                    'slug' => $product->slug,
+                    'thumnail_img' => $product->thumnail_img,
+                    'final_price' => $product->final_price,
+                    'category_name' => $product->category?->category_translations->first()?->name ?? $product->category?->name ?? 'N/A',
+                ];
+            });
+            return Inertia::render('frontend/Index', [
+                'products' => $products,
+                'translations' => __('messages'),
+                'locale' => $locale,
+            ]);
+
+        } catch (\Throwable $e) {
+            \Log::error('Failed to load products in index(): ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong while loading products.');
+        }
+        // return Inertia::render('frontend/Index', [
+        //     'title' => 'Home',
+        //     'description' => 'Welcome to our website!',
+        //     'translations' => __('messages'),
+        //     'locale' => App::getLocale(),
+        // ]);
     }
 
     public function switchLanguage($locale)
