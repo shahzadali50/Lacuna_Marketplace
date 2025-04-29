@@ -30,8 +30,8 @@ const columns = computed(() => [
     { title: translations.value.stock || 'Stock', dataIndex: 'stock', key: 'stock' },
     { title: translations.value.purchase_price || 'Purchase Price', dataIndex: 'purchase_price', key: 'purchase_price' },
     { title: translations.value.sale_price || 'Sale Price', dataIndex: 'sale_price', key: 'sale_price' },
-    { title: translations.value.brand || 'Brand', dataIndex: 'brand_name', key: 'brand_name' },
     { title: translations.value.category || 'Category', dataIndex: 'category_name', key: 'category_name' },
+    { title: translations.value.brand || 'Brand', dataIndex: 'brand_name', key: 'brand_name' },
     { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
     { title: translations.value.action || 'Action', dataIndex: 'action', key: 'action' },
 ]);

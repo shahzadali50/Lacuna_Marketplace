@@ -32,6 +32,16 @@ const isLoading = ref(false);
 const thumnailPreview = ref<string | null>(null);
 const gallaryPreviews = ref<string[]>([]);
 
+// Add detailed logging for props
+console.log('Props:', {
+    isVisible: props.isVisible,
+    product: props.product,
+    productKeys: props.product ? Object.keys(props.product) : [],
+    productValues: props.product ? Object.values(props.product) : [],
+    productDiscount: props.product?.discount,
+    productDiscountType: typeof props.product?.discount,
+});
+
 const editForm = useForm({
     id: props.product?.id || 0,
     name: props.product?.name || '',
@@ -47,8 +57,47 @@ const editForm = useForm({
     feature: props.product?.feature || false,
     barcode: props.product?.barcode || '',
     discount: props.product?.discount || 0,
-    final_price: props.product?.final_price || 0,
+    final_price: props.product?.final_price || props.product?.sale_price || 0,
 });
+
+// Add logging for initial form state
+console.log('Initial Form State:', {
+    formDiscount: editForm.discount,
+    formDiscountType: typeof editForm.discount,
+});
+
+// Watch for product changes to update form values
+watch(() => props.product, (newProduct) => {
+    console.log('Product Changed:', {
+        newProduct,
+        newProductKeys: newProduct ? Object.keys(newProduct) : [],
+        newProductValues: newProduct ? Object.values(newProduct) : [],
+        newProductDiscount: newProduct?.discount,
+        newProductDiscountType: typeof newProduct?.discount,
+    });
+
+    if (newProduct) {
+        editForm.id = newProduct.id;
+        editForm.name = newProduct.name;
+        editForm.description = newProduct.description;
+        editForm.brand_id = newProduct.brand_id;
+        editForm.category_id = newProduct.category_id;
+        editForm.stock = newProduct.stock;
+        editForm.status = newProduct.status || 'active';
+        editForm.purchase_price = newProduct.purchase_price || 0;
+        editForm.sale_price = newProduct.sale_price || 0;
+        editForm.feature = newProduct.feature || false;
+        editForm.barcode = newProduct.barcode || '';
+        editForm.discount = newProduct.discount || 0; // Use product discount
+        editForm.final_price = newProduct.final_price || newProduct.sale_price || 0;
+
+        // Add logging after form update
+        console.log('Form Updated:', {
+            formDiscount: editForm.discount,
+            formDiscountType: typeof editForm.discount,
+        });
+    }
+}, { immediate: true });
 
 // Reset brand_id when category_id changes
 watch(() => editForm.category_id, () => {
@@ -105,7 +154,7 @@ const finalPrice = computed(() => {
         const discountAmount = (editForm.sale_price * editForm.discount) / 100;
         return editForm.sale_price - discountAmount;
     }
-    return editForm.sale_price;
+    return editForm.sale_price || 0;
 });
 
 watch([() => editForm.sale_price, () => editForm.discount], () => {
@@ -371,24 +420,25 @@ const updateProduct = () => {
                 </div>
             </div>
             <a-row :gutter="16">
-                <a-col :xs="24" :md="12">
+                <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">Discount (%)</label>
+                        <label class="block">{{ translations.discount || 'Discount (%)' }}</label>
                         <a-input-number
                             v-model:value="editForm.discount"
                             class="mt-2 w-full"
                             :min="0"
                             :max="100"
                             :step="1"
+                            :placeholder="translations.enter_discount || 'Enter Discount'"
                         />
                         <div v-if="editForm.errors.discount" class="text-red-500">
                             {{ editForm.errors.discount }}
                         </div>
                     </div>
                 </a-col>
-                <a-col :xs="24" :md="12">
+                <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">Final Price</label>
+                        <label class="block">{{ translations.final_price || 'Final Price' }}</label>
                         <a-input-number
                             v-model:value="editForm.final_price"
                             class="mt-2 w-full"
@@ -396,6 +446,9 @@ const updateProduct = () => {
                             :step="0.01"
                             disabled
                         />
+                        <div v-if="editForm.errors.final_price" class="text-red-500">
+                            {{ editForm.errors.final_price }}
+                        </div>
                     </div>
                 </a-col>
             </a-row>
