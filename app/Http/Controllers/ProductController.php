@@ -344,9 +344,12 @@ class ProductController extends Controller
 
     public function product_log()
     {
+        $locale = session('locale', App::getLocale());
         $productLogs = ProductLog::with('user')->where('user_id', Auth::id())->orderBy('created_at', 'desc')->paginate(10);
         return Inertia::render('admin/product/ProductLog', [
             'productLog' => $productLogs,
+            'translations' => __('messages'),
+            'locale' => $locale,
         ]);
     }
 

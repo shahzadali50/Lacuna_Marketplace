@@ -73,8 +73,8 @@ const formatDate = (date: string) => {
 // 8. Event Handlers
 const deleteProduct = (id: number) => {
     Modal.confirm({
-        title: 'Are you sure you want to delete this Product?',
-        content: 'This action cannot be undone.',
+        title: translations.value.delete_product_confirm || 'Are you sure you want to delete this Product?',
+        content: translations.value.delete_product_warning || 'This action cannot be undone.',
         okText: 'Yes, Delete',
         okType: 'danger',
         cancelText: 'Cancel',
@@ -110,14 +110,14 @@ const openEditModal = (product: any) => {
             <a-col :span="24">
                 <div class="bg-white rounded-lg p-4 shadow-md responsive-table">
                     <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">Product List </h2>
+                        <h2 class="text-lg font-semibold">{{ translations.product_list || 'Product List ' }}</h2>
 
                         <div>
                             <a-button class="mx-2" type="default" @click="isAddProductModalVisible = true">
-                                Add Product
+                                {{ translations.add_product || 'Add Product' }}
                             </a-button>
                             <Link :href="route('admin.product-log')">
-                            <a-button class="mx-2" type="default">Product Logs</a-button>
+                            <a-button class="mx-2" type="default">{{ translations.product_logs || 'Product Logs' }}</a-button>
                             </Link>
                         </div>
                     </div>
@@ -166,12 +166,12 @@ const openEditModal = (product: any) => {
                             </template>
                             <template v-else-if="column.dataIndex === 'action'">
                                 <a-tooltip placement="top">
-                                    <template #title>Delete</template>
+                                    <template #title>{{ translations.delete || 'Delete' }}</template>
                                     <a-button type="link" @click="deleteProduct(record.id)"><i
                                             class="fa fa-trash text-red-500" aria-hidden="true"></i></a-button>
                                 </a-tooltip>
                                 <a-tooltip placement="top">
-                                    <template #title>Edit</template>
+                                    <template #title>{{ translations.edit || 'Edit' }}</template>
                                     <a-button type="link" @click="openEditModal(record)"><i
                                             class="fa fa-pencil-square-o text-s text-green-500"
                                             aria-hidden="true"></i></a-button>

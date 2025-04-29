@@ -3,17 +3,24 @@ import AdminLayout from '@/layouts/AdminLayout.vue';
 import { Head } from '@inertiajs/vue3';
 import dayjs from "dayjs";
 import { Link } from '@inertiajs/vue3';
+import { usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const formatDate = (date: string) => {
     return date ? dayjs(date).format("DD-MM-YYYY hh:mm A") : "N/A";
 };
 
+const page = usePage();
+const translations = computed(() => {
+    return (page.props.translations as any)?.dashboard_all_pages || {};
+});
+
 const columns = [
-    { title: 'ID', dataIndex: 'id', key: 'id' },
-    { title: 'Note', dataIndex: 'note', key: 'note' },
-    { title: 'Product', dataIndex: 'product_name', key: 'product_name' },
-    { title: 'User', dataIndex: 'user_name', key: 'user' },
-    { title: 'Created At', dataIndex: 'created_at', key: 'created_at' },
+    { title: translations.value.id || 'ID', dataIndex: 'id', key: 'id' },
+    { title: translations.value.note || 'Note', dataIndex: 'note', key: 'note' },
+    { title: translations.value.product || 'Product', dataIndex: 'product_name', key: 'product_name' },
+    { title: translations.value.user || 'User', dataIndex: 'user_name', key: 'user' },
+    { title: translations.value.created_at || 'Created At', dataIndex: 'created_at', key: 'created_at' },
 ];
 
 defineProps({
@@ -28,9 +35,9 @@ defineProps({
             <a-col :span="24">
                 <div class="bg-white rounded-lg p-4 shadow-md responsive-table">
                     <div class="mb-4 flex items-center justify-between">
-                        <h2 class="text-lg font-semibold">Brand Logs</h2>
+                        <h2 class="text-lg font-semibold">{{ translations.product_logs || 'Product Logs' }}</h2>
                         <Link :href="route('admin.products')" >
-                            <a-button type="default">Product List</a-button>
+                            <a-button type="default">{{ translations.product_list || 'Product List' }}</a-button>
                         </Link>
 
                     </div>

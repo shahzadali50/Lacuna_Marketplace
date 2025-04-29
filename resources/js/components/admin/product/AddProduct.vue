@@ -134,7 +134,7 @@ const saveProduct = () => {
             <a-row :gutter="16">
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.category || 'Category' }}</label>
+                        <label class="block">{{ translations.select_category || 'Select Category' }}</label>
                         <a-select
                             v-model:value="addProductForm.category_id"
                             show-search
@@ -150,7 +150,7 @@ const saveProduct = () => {
                 </a-col>
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.brand || 'Brand' }}</label>
+                        <label class="block">{{ translations.select_brand || 'Select Brand' }}</label>
                         <a-select
                             v-model:value="addProductForm.brand_id"
                             show-search
@@ -169,11 +169,11 @@ const saveProduct = () => {
             <a-row :gutter="16">
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.name || 'Name' }}</label>
+                        <label class="block">{{ translations.enter_product_name || 'Enter Product Name' }}</label>
                         <a-input
                             v-model:value="addProductForm.name"
                             class="mt-2 w-full"
-                            :placeholder="translations.name_placeholder || 'Enter Name'"
+                            :placeholder="translations.enter_product_name || 'Enter Product Name'"
                         />
                         <div v-if="addProductForm.errors.name" class="text-red-500">
                             {{ addProductForm.errors.name }}
@@ -182,7 +182,7 @@ const saveProduct = () => {
                 </a-col>
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.barcode || 'Barcode' }}</label>
+                        <label class="block">{{ translations.enter_barcode || 'Enter Barcode' }}</label>
                         <a-input
                             v-model:value="addProductForm.barcode"
                             class="mt-2 w-full"
@@ -197,7 +197,7 @@ const saveProduct = () => {
             <a-row :gutter="16">
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.purchase_price || 'Purchase Price' }}</label>
+                        <label class="block">{{ translations.enter_purchase_price || 'Enter Purchase Price' }}</label>
                         <a-input-number
                             v-model:value="addProductForm.purchase_price"
                             class="mt-2 w-full"
@@ -212,7 +212,7 @@ const saveProduct = () => {
                 </a-col>
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.sale_price || 'Sale Price' }}</label>
+                        <label class="block">{{ translations.enter_sale_price || 'Sale Price' }}</label>
                         <a-input-number
                             v-model:value="addProductForm.sale_price"
                             class="mt-2 w-full"
@@ -243,7 +243,7 @@ const saveProduct = () => {
                 </a-col>
                 <a-col :span="12">
                     <div class="mb-4">
-                        <label class="block">{{ translations.status || 'Status' }}</label>
+                        <label class="block">{{ translations.select_status || 'Select Status' }}</label>
                         <a-select
                             v-model:value="addProductForm.status"
                             class="mt-2 w-full"
@@ -259,11 +259,11 @@ const saveProduct = () => {
                 </a-col>
             </a-row>
             <div class="mb-4">
-                <label class="block">{{ translations.description || 'Description' }}</label>
+                <label class="block">{{ translations.enter_description || 'Enter Description' }}</label>
                 <a-textarea
                     v-model:value="addProductForm.description"
                     class="mt-2 w-full"
-                    :placeholder="translations.enter_description || 'Description'"
+                    :placeholder="translations.enter_description || 'Enter Description'"
                     :auto-size="{ minRows: 3, maxRows: 6 }"
                 />
                 <div v-if="addProductForm.errors.description" class="text-red-500">
@@ -341,7 +341,7 @@ const saveProduct = () => {
             <a-row :gutter="16">
                 <a-col :xs="24" :md="12">
                     <div class="mb-4">
-                        <label class="block">Discount (%)</label>
+                        <label class="block">{{ translations.enter_discount || 'Enter Discount' }}</label>
                         <a-input-number
                             v-model:value="addProductForm.discount"
                             class="mt-2 w-full"
@@ -356,7 +356,7 @@ const saveProduct = () => {
                 </a-col>
                 <a-col :xs="24" :md="12">
                     <div class="mb-4">
-                        <label class="block">Final Price</label>
+                        <label class="block">{{ translations.final_price || 'Final Price' }}</label>
                         <a-input-number
                             v-model:value="addProductForm.final_price"
                             class="mt-2 w-full"
