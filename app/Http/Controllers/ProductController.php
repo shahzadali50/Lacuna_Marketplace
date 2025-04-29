@@ -266,7 +266,7 @@ class ProductController extends Controller
             'final_price' => 'required|numeric|min:0',
             'feature' => 'nullable|boolean',
             'barcode' => 'nullable|string|max:255|unique:products,barcode,' . $id,
-            'existing_gallary_img' => 'nullable|array', // ✅ Important for merging
+            'existing_gallary_img' => 'nullable|array',
         ]);
 
         DB::beginTransaction();
@@ -283,9 +283,21 @@ class ProductController extends Controller
                 $thumbnailPath = $request->file('thumnail_img')->store('products/thumbnails', 'public');
             }
 
-            // Handle gallery images
-            $galleryPaths = $request->input('existing_gallary_img', []);
+            // Gallery Image Handling
+            $oldGallery = json_decode($product->gallary_img, true) ?? [];
+            $newExistingGallery = $request->input('existing_gallary_img', []);
 
+            // ✅ Remove deleted images from storage
+            foreach ($oldGallery as $oldImage) {
+                if (!in_array($oldImage, $newExistingGallery)) {
+                    if ($oldImage && Storage::disk('public')->exists($oldImage)) {
+                        Storage::disk('public')->delete($oldImage);
+                    }
+                }
+            }
+
+            // ✅ Add new uploaded images
+            $galleryPaths = $newExistingGallery;
             if ($request->hasFile('gallary_img')) {
                 foreach ($request->file('gallary_img') as $image) {
                     $galleryPaths[] = $image->store('products/gallery', 'public');
@@ -311,13 +323,13 @@ class ProductController extends Controller
                 'barcode' => $request->barcode,
             ]);
 
-            // Create product log
+            // Product log
             $user = Auth::user();
             $note = 'Product "' . $oldName . '" updated to "' . $product->name . '" by ' . ($user->name ?? 'Unknown User') .
-                    ' with previous purchase price: ' . $product->getOriginal('purchase_price') . ' -> new: ' . $product->purchase_price .
-                    ', previous sale price: ' . $product->getOriginal('sale_price') . ' -> new: ' . $product->sale_price .
-                    ', previous discount: ' . $product->getOriginal('discount') . '% -> new: ' . $product->discount . '%' .
-                    ', previous final price: ' . $product->getOriginal('final_price') . ' -> new: ' . $product->final_price;
+                ' with previous purchase price: ' . $product->getOriginal('purchase_price') . ' -> new: ' . $product->purchase_price .
+                ', previous sale price: ' . $product->getOriginal('sale_price') . ' -> new: ' . $product->sale_price .
+                ', previous discount: ' . $product->getOriginal('discount') . '% -> new: ' . $product->discount . '%' .
+                ', previous final price: ' . $product->getOriginal('final_price') . ' -> new: ' . $product->final_price;
 
             ProductLog::create([
                 'note' => $note,
@@ -326,7 +338,6 @@ class ProductController extends Controller
                 'user_id' => Auth::id(),
             ]);
 
-            // Dispatch translation job
             TranslateProduct::dispatch($product);
 
             DB::commit();
@@ -338,6 +349,7 @@ class ProductController extends Controller
             return redirect()->back()->with('error', 'Something went wrong! Please try again.');
         }
     }
+
 
 
     public function product_log()
