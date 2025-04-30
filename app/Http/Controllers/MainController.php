@@ -70,6 +70,7 @@ class MainController extends Controller
             if (!$product) {
                 return redirect()->back()->with('error', 'Product detail not found.');
             }
+            // dd($product->gallary_img);
             return Inertia::render('frontend/products/ProductDetail', [
                 'product' => [
                     'id' => $product->id,
@@ -81,7 +82,14 @@ class MainController extends Controller
                     'discount' => $product->discount,
                     'stock' => $product->stock,
                     'thumbnail_image' => $product->thumnail_img ?? null,
-                    'gallery_images' => $product->gallary_img ?? null,
+                  'gallery_images' => collect(
+    is_array($product->gallary_img)
+        ? $product->gallary_img
+        : (is_string($product->gallary_img) && str_starts_with($product->gallary_img, '[')
+            ? json_decode($product->gallary_img, true)
+            : explode(',', $product->gallary_img)
+        )
+)->map(fn($img) => asset("storage/" . trim($img)))->toArray(),
                     'category_name' => $product->category?->category_translations->first()?->name ?? $product->category?->name ?? 'N/A',
                 ],
                 'translations' => __('messages'),

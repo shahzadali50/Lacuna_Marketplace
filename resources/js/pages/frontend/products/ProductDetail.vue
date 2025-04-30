@@ -23,6 +23,8 @@ interface Product {
   discount: number | null;
   stock: number;
   category_name: string;
+  thumbnail_image: string | null;
+  gallery_images: string[];
 }
 
 const props = defineProps<{
@@ -182,6 +184,23 @@ const decreaseQuantity = () => {
           <div class="prose max-w-none">
             <p>{{ product.description }}</p>
           </div>
+          <div>
+            <h2>Thumnail Image</h2>
+            <div>
+              <img :src="'/storage/' + product.thumbnail_image" :alt="product.name" class="w-64" />
+            </div>
+          </div>
+          <div class="flex gap-3 flex-wrap">
+  <img
+    v-for="(img, index) in product.gallery_images"
+    :key="index"
+    :src="img"
+    class="w-32 h-32 object-cover border rounded-md"
+    :alt="`${product.name} image ${index + 1}`"
+  />
+</div>
+
+
         </div>
       </div>
     </div>
