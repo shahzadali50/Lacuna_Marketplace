@@ -19,7 +19,7 @@ use App\Http\Controllers\PurchaseProductController;
 //     ]);
 // })->name('home');
 Route::get('/', [MainController::class, 'index'])->name('home');
-Route::get('/product-detail/{slug}', [MainController::class, 'productDetail'])->name('product.detail');
+Route::get('/product/{slug}', [MainController::class, 'productDetail'])->name('product.detail');
 Route::get('/lang/{locale}', [MainController::class, 'switchLanguage'])->name('language.switch');
 
 

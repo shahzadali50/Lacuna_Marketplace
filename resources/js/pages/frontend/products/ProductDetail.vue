@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { Head } from '@inertiajs/vue3';
 import UserLayout from '@/layouts/UserLayout.vue';
+import { Row, Col } from 'ant-design-vue';
 import {
   ShoppingCartOutlined,
   HeartOutlined,
@@ -91,163 +92,183 @@ const decreaseQuantity = () => {
       </div>
     </div>
 
-    <!-- Product Detail Section -->
-    <div class="container mx-auto px-4 py-8">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Product Images -->
-        <div class="relative">
-          <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
-            <img
-              :src="fullGallery[currentImageIndex]"
-              :alt="product.name"
-              class="w-full h-full object-cover"
-            />
-          </div>
+    <!-- Main Content Section -->
+    <section class="py-8">
+      <div class="container mx-auto px-4">
+        <Row :gutter="[32, 32]">
+          <!-- Product Images -->
+          <Col :xs="24" :lg="12">
+            <div class="relative">
+              <div class="aspect-square rounded-lg overflow-hidden bg-gray-100">
+                <img
+                  :src="fullGallery[currentImageIndex]"
+                  :alt="product.name"
+                  class="w-full h-full object-cover"
+                />
+              </div>
 
-          <!-- Navigation Buttons -->
-          <button
-            @click="prevImage"
-            class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ArrowLeftOutlined />
-          </button>
-          <button
-            @click="nextImage"
-            class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
-          >
-            <ArrowRightOutlined />
-          </button>
-
-          <!-- Thumbnails -->
-          <div class="flex mt-4 space-x-2 overflow-x-auto">
-            <div
-              v-for="(image, index) in fullGallery"
-              :key="index"
-              @click="currentImageIndex = index"
-              class="w-16 h-16 rounded-md overflow-hidden cursor-pointer border-2"
-              :class="currentImageIndex === index ? 'border-primary' : 'border-transparent'"
-            >
-              <img :src="image" :alt="`${product.name} - ${index + 1}`" class="w-full h-full object-cover" />
-            </div>
-          </div>
-        </div>
-
-        <!-- Product Info -->
-        <div>
-          <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
-
-          <!-- Price -->
-          <div class="mb-6">
-            <div class="flex items-center">
-              <span class="text-3xl font-bold text-gray-900">${{ product.final_price }}</span>
-              <span v-if="product.sale_price" class="ml-3 text-lg text-gray-500 line-through">${{ product.sale_price }}</span>
-              <span v-if="product.discount" class="ml-3 bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">
-                -{{ product.discount }}%
-              </span>
-            </div>
-          </div>
-
-          <!-- Stock -->
-          <div class="mb-6">
-            <div class="flex items-center">
-              <CheckCircleOutlined :class="product.stock > 0 ? 'text-green-500 mr-2' : 'text-red-500 mr-2'" />
-              <span class="text-gray-700">
-                {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
-                <span v-if="product.stock > 0" class="text-gray-500">({{ product.stock }} Available)</span>
-              </span>
-            </div>
-          </div>
-
-          <!-- Shipping Info -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="flex items-center p-3 bg-gray-100 rounded-lg">
-              <CarOutlined class="text-primary text-xl mr-2" />
-              <span class="text-sm">Free Shipping</span>
-            </div>
-            <div class="flex items-center p-3 bg-gray-100 rounded-lg">
-              <SafetyCertificateOutlined class="text-primary text-xl mr-2" />
-              <span class="text-sm">Secure Payment</span>
-            </div>
-            <div class="flex items-center p-3 bg-gray-100 rounded-lg">
-              <CheckCircleOutlined class="text-primary text-xl mr-2" />
-              <span class="text-sm">Money Back</span>
-            </div>
-          </div>
-
-          <!-- Quantity -->
-          <div class="mb-6">
-            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
-            <div class="flex items-center">
+              <!-- Navigation Buttons -->
               <button
-                @click="decreaseQuantity"
-                class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-l-md hover:bg-gray-100"
+                @click="prevImage"
+                class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
               >
-                <MinusOutlined />
+                <ArrowLeftOutlined />
               </button>
-              <input
-                type="number"
-                v-model="quantity"
-                min="1"
-                :max="product.stock"
-                class="w-16 h-10 text-center border-t border-b border-gray-300 focus:outline-none"
-              />
               <button
-                @click="increaseQuantity"
-                class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-r-md hover:bg-gray-100"
+                @click="nextImage"
+                class="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100"
               >
-                <PlusOutlined />
+                <ArrowRightOutlined />
               </button>
+
+              <!-- Thumbnails -->
+              <div class="flex mt-4 space-x-2 overflow-x-auto">
+                <div
+                  v-for="(image, index) in fullGallery"
+                  :key="index"
+                  @click="currentImageIndex = index"
+                  class="w-16 h-16 rounded-md overflow-hidden cursor-pointer border-2"
+                  :class="currentImageIndex === index ? 'border-primary' : 'border-transparent'"
+                >
+                  <img :src="image" :alt="`${product.name} - ${index + 1}`" class="w-full h-full object-cover" />
+                </div>
+              </div>
             </div>
+          </Col>
+
+          <!-- Product Info -->
+          <Col :xs="24" :lg="12">
+            <div class="h-full">
+              <h1 class="text-2xl md:text-3xl font-bold text-gray-900 mb-2">{{ product.name }}</h1>
+
+              <!-- Price -->
+              <div class="mb-6">
+                <div class="flex items-center">
+                  <span class="text-3xl font-bold text-gray-900">${{ product.final_price }}</span>
+                  <span v-if="product.sale_price" class="ml-3 text-lg text-gray-500 line-through">${{ product.sale_price }}</span>
+                  <span v-if="product.discount" class="ml-3 bg-red-100 text-red-600 px-2 py-1 rounded text-sm font-medium">
+                    -{{ product.discount }}%
+                  </span>
+                </div>
+              </div>
+
+              <!-- Stock -->
+              <div class="mb-6">
+                <div class="flex items-center">
+                  <CheckCircleOutlined :class="product.stock > 0 ? 'text-green-500 mr-2' : 'text-red-500 mr-2'" />
+                  <span class="text-gray-700">
+                    {{ product.stock > 0 ? 'In Stock' : 'Out of Stock' }}
+                    <span v-if="product.stock > 0" class="text-gray-500">({{ product.stock }} Available)</span>
+                  </span>
+                </div>
+              </div>
+
+              <!-- Shipping Info -->
+              <Row :gutter="[16, 16]" class="mb-6">
+                <Col :xs="24" :sm="8">
+                  <div class="flex items-center p-3 bg-gray-100 rounded-lg">
+                    <CarOutlined class="text-primary text-xl mr-2" />
+                    <span class="text-sm">Free Shipping</span>
+                  </div>
+                </Col>
+                <Col :xs="24" :sm="8">
+                  <div class="flex items-center p-3 bg-gray-100 rounded-lg">
+                    <SafetyCertificateOutlined class="text-primary text-xl mr-2" />
+                    <span class="text-sm">Secure Payment</span>
+                  </div>
+                </Col>
+                <Col :xs="24" :sm="8">
+                  <div class="flex items-center p-3 bg-gray-100 rounded-lg">
+                    <CheckCircleOutlined class="text-primary text-xl mr-2" />
+                    <span class="text-sm">Money Back</span>
+                  </div>
+                </Col>
+              </Row>
+
+              <!-- Quantity -->
+              <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quantity</label>
+                <div class="flex items-center">
+                  <button
+                    @click="decreaseQuantity"
+                    class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-l-md hover:bg-gray-100"
+                  >
+                    <MinusOutlined />
+                  </button>
+                  <input
+                    type="number"
+                    v-model="quantity"
+                    min="1"
+                    :max="product.stock"
+                    class="w-16 h-10 text-center border-t border-b border-gray-300 focus:outline-none"
+                  />
+                  <button
+                    @click="increaseQuantity"
+                    class="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-r-md hover:bg-gray-100"
+                  >
+                    <PlusOutlined />
+                  </button>
+                </div>
+              </div>
+
+              <!-- Buttons -->
+              <Row :gutter="[16, 16]" class="mb-6">
+                <Col :xs="24" :sm="12">
+                  <button
+                    class="w-full bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark transition-colors flex items-center justify-center"
+                  >
+                    <ShoppingCartOutlined class="mr-2" />
+                    Add to Cart
+                  </button>
+                </Col>
+                <Col :xs="24" :sm="12">
+                  <button
+                    class="w-full bg-gray-900 text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition-colors"
+                  >
+                    Buy Now
+                  </button>
+                </Col>
+              </Row>
+
+              <!-- Extra -->
+              <Row :gutter="[16, 16]" class="mb-6">
+                <Col :xs="24" :sm="12">
+                  <button
+                    class="w-full border border-gray-300 py-3 px-6 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+                  >
+                    <HeartOutlined class="mr-2" />
+                    Add to Wishlist
+                  </button>
+                </Col>
+                <Col :xs="24" :sm="12">
+                  <button
+                    class="w-full border border-gray-300 py-3 px-6 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
+                  >
+                    <ShareAltOutlined class="mr-2" />
+                    Share
+                  </button>
+                </Col>
+              </Row>
+            </div>
+          </Col>
+        </Row>
+
+        <!-- Description -->
+        <div class="mt-12">
+          <div class="border-b border-gray-200">
+            <nav class="flex -mb-px">
+              <button class="py-4 px-6 border-b-2 border-primary font-medium text-primary">
+                Description
+              </button>
+            </nav>
           </div>
 
-          <!-- Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 mb-6">
-            <button
-              class="flex-1 bg-primary text-white py-3 px-6 rounded-md font-medium hover:bg-primary-dark transition-colors flex items-center justify-center"
-            >
-              <ShoppingCartOutlined class="mr-2" />
-              Add to Cart
-            </button>
-            <button
-              class="flex-1 bg-gray-900 text-white py-3 px-6 rounded-md font-medium hover:bg-gray-800 transition-colors"
-            >
-              Buy Now
-            </button>
-          </div>
-
-          <!-- Extra -->
-          <div class="flex gap-3 mb-6">
-            <button
-              class="flex-1 border border-gray-300 py-3 px-6 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
-            >
-              <HeartOutlined class="mr-2" />
-              Add to Wishlist
-            </button>
-            <button
-              class="flex-1 border border-gray-300 py-3 px-6 rounded-md font-medium hover:bg-gray-50 transition-colors flex items-center justify-center"
-            >
-              <ShareAltOutlined class="mr-2" />
-              Share
-            </button>
+          <div class="py-6 prose max-w-none">
+            <p>{{ product.description }}</p>
           </div>
         </div>
       </div>
-
-      <!-- Description -->
-      <div class="mt-12">
-        <div class="border-b border-gray-200">
-          <nav class="flex -mb-px">
-            <button class="py-4 px-6 border-b-2 border-primary font-medium text-primary">
-              Description
-            </button>
-          </nav>
-        </div>
-
-        <div class="py-6 prose max-w-none">
-          <p>{{ product.description }}</p>
-        </div>
-      </div>
-    </div>
+    </section>
   </UserLayout>
 </template>
 
