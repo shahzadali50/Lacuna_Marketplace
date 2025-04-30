@@ -9,6 +9,7 @@ interface Product {
   name: string;
   slug: string;
   final_price: number;
+  sale_price: number;
   thumnail_img: string;
   category_name: string;
 }
@@ -31,7 +32,7 @@ const formatPrice = (price: number) => {
 
 // Navigate to product detail page
 const goToProductDetail = (slug: string) => {
-  router.visit(`/products/${slug}`);
+  router.visit(route('product.detail', { slug }));
 };
 
 // Add to cart function
@@ -69,14 +70,19 @@ const addToFavorites = (e: Event, productId: number) => {
                 <img :src="'/storage/' + product.thumnail_img" :alt="product.name" class="w-full h-full object-cover">
                 <div class="absolute top-1 right-1 bg-white rounded-full px-1.5 py-0.5 text-[10px] sm:text-xs font-medium text-gray-800">
                   {{ product.category_name }}
+
                 </div>
               </div>
             </template>
             <div class="">
-              <h3 class="text-[15px] sm:text-xl font-semibold text-gray-900 mb-1 line-clamp-2">{{ product.name }}</h3>
+              <h3 class="text-[15px] sm:text-xl font-semibold text-gray-900 mb-1">{{ product.name }}</h3>
               <div class="flex justify-between items-center">
-                <span class="text-xs sm:text-sm md:text-base font-bold text-primary">{{ formatPrice(product.final_price) }}</span>
-                <div class="flex gap-1">
+               <div>
+                <span class="text-xs sm:text-sm md:text-base font-bold text-primary pr-2">{{ formatPrice(product.final_price) }}</span>
+                <span class="text-xs sm:text-sm md:text-base text-secondary line-through">{{ formatPrice(product.sale_price) }}</span>
+               </div>
+              </div>
+                <div class="flex gap-1 mt-2">
                   <Button
                     type="primary"
                     shape="circle"
@@ -96,7 +102,6 @@ const addToFavorites = (e: Event, productId: number) => {
                     <template #icon><heart-outlined /></template>
                   </Button>
                 </div>
-              </div>
             </div>
           </Card>
         </Col>
