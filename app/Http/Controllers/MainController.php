@@ -21,7 +21,7 @@ class MainController extends Controller
             $locale = session('locale', App::getLocale());
 
             // Load products with brand, category, and their translations for current locale
-            $products = Product::where('user_id', Auth::id())
+            $products = Product::where('status', 1)
                 ->with([
                     'category' => fn($q) => $q->with(['category_translations' => fn($q) => $q->where('lang', $locale)]),
                     'product_translations' => fn($q) => $q->where('lang', $locale),
@@ -36,10 +36,13 @@ class MainController extends Controller
                     'name' => $product->product_translations->first()?->name ?? $product->name,
                     'slug' => $product->slug,
                     'thumnail_img' => $product->thumnail_img,
+                    'sale_price' => $product->sale_price,
                     'final_price' => $product->final_price,
                     'category_name' => $product->category?->category_translations->first()?->name ?? $product->category?->name ?? 'N/A',
                 ];
             });
+
+            // dd($products->sale_price);
             return Inertia::render('frontend/Index', [
                 'products' => $products,
                 'translations' => __('messages'),
@@ -50,13 +53,46 @@ class MainController extends Controller
             \Log::error('Failed to load products in index(): ' . $e->getMessage());
             return redirect()->back()->with('error', 'Something went wrong while loading products.');
         }
-        // return Inertia::render('frontend/Index', [
-        //     'title' => 'Home',
-        //     'description' => 'Welcome to our website!',
-        //     'translations' => __('messages'),
-        //     'locale' => App::getLocale(),
-        // ]);
     }
+
+    public function productDetail($slug)
+    {
+        try {
+            $locale = session('locale', App::getLocale());
+
+            $product = Product::where('slug', $slug)
+                ->with([
+                    'category' => fn($q) => $q->with(['category_translations' => fn($q) => $q->where('lang', $locale)]),
+                    'product_translations' => fn($q) => $q->where('lang', $locale),
+                ])
+                ->first();
+
+            if (!$product) {
+                return redirect()->back()->with('error', 'Product detail not found.');
+            }
+            return Inertia::render('frontend/products/ProductDetail', [
+                'product' => [
+                    'id' => $product->id,
+                    'name' => $product->product_translations->first()?->name ?? $product->name,
+                    'description' =>  $product->product_translations->first()?->description ?? $product->description,
+                    'slug' => $product->slug,
+                    'final_price' => $product->final_price,
+                    'sale_price' => $product->sale_price,
+                    'discount' => $product->discount,
+                    'stock' => $product->stock,
+                    'thumbnail_image' => $product->thumnail_img ?? null,
+                    'gallery_images' => $product->gallary_img ?? null,
+                    'category_name' => $product->category?->category_translations->first()?->name ?? $product->category?->name ?? 'N/A',
+                ],
+                'translations' => __('messages'),
+                'locale' => $locale,
+            ]);
+        } catch (\Throwable $e) {
+            \Log::error('Product detail error: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Something went wrong.');
+        }
+    }
+
 
     public function switchLanguage($locale)
     {
