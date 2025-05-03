@@ -6,9 +6,9 @@ section {
 img {
     width: 100%;
 }
-
-
-
+body{
+    background-color: rgb(249, 250, 251) !important;
+}
 /* Responsive Fix */
 @media only screen and (max-width: 576px) {
     .product-card .ant-card-body {

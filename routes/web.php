@@ -21,18 +21,6 @@ use App\Http\Controllers\PurchaseProductController;
 Route::get('/', [MainController::class, 'index'])->name('home');
 Route::get('/product/{slug}', [MainController::class, 'productDetail'])->name('product.detail');
 Route::get('/lang/{locale}', [MainController::class, 'switchLanguage'])->name('language.switch');
-
-
-// Route::get('/products/{id}', function ($id) {
-//     return Inertia::render('frontend/products/ProductDetail', [
-//         'title' => 'Product Detail',
-//         'description' => 'View product details',
-//         'translations' => __('messages'),
-//         'locale' => App::getLocale(),
-//         'productId' => $id,
-//     ]);
-// })->name('product.detail');
-
 Route::middleware(['auth', 'admin', 'verified'])->name('admin.')->group(function () {
     Route::get('cache-clear', [MainController::class, 'cacheClear'])->name('cache.clear');
     Route::get('admin/dashboard', [MainController::class, 'dashboard'])->name('dashboard');

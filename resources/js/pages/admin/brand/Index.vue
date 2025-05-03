@@ -4,7 +4,7 @@ import { Head, Link, useForm, usePage } from "@inertiajs/vue3";
 import { Modal } from "ant-design-vue";
 import dayjs from "dayjs";
 const isLoading = ref(false);
-import { ref, computed, watch } from "vue";
+import { ref, computed } from "vue";
 
 const page = usePage();
 
@@ -57,38 +57,6 @@ const editForm = useForm({
     image: null as File | null,
     _method: 'PUT'
 });
-const productForm = useForm({
-    id: null,
-    name: "",
-    description: "",
-    brand_id: null,
-    category_id: null,
-    thumnail_img: null,
-    gallary_img: [],
-    stock: 0,
-    status: 'active',
-    purchase_price: 0,
-    sale_price: 0,
-    discount: 0,
-    final_price: 0,
-    feature: false,
-    barcode: "",
-});
-
-// Add computed property for final price calculation
-const finalPrice = computed(() => {
-    if (productForm.sale_price && productForm.discount) {
-        const discountAmount = (productForm.sale_price * productForm.discount) / 100;
-        return productForm.sale_price - discountAmount;
-    }
-    return productForm.sale_price;
-});
-
-// Watch for changes in sale price and discount to update final price
-watch([() => productForm.sale_price, () => productForm.discount], () => {
-    productForm.final_price = finalPrice.value;
-});
-
 const deleteBrand = (id: number) => {
     Modal.confirm({
         title: translations.value.confirm_delete_title || 'Are you sure you want to delete',
@@ -110,9 +78,7 @@ const deleteBrand = (id: number) => {
     });
 };
 const isEditModalVisible = ref(false);
-const isproductModalVisible = ref(false);
 const isAddBrandModalVisible = ref(false);
-const selectedBrandName = ref("");
 const previewImageUrl = ref('');
 
 const isImagePreviewModalVisible = ref(false);
@@ -167,23 +133,6 @@ const updateBrand = () => {
     });
 };
 
-const openProductModal = (record: any) => {
-    selectedBrandName.value = record.name;
-    productForm.brand_id = record.id;
-    isproductModalVisible.value = true;
-};
-const saveProduct = () => {
-    isLoading.value = true;
-    productForm.post(route("admin.product.store"), {
-        onSuccess: () => {
-            productForm.reset();
-            isproductModalVisible.value = false;
-        },
-        onFinish: () => {
-            isLoading.value = false;
-        },
-    });
-};
 
 const openImagePreview = (imagePath: string) => {
     previewImageUrl.value = '/storage/' + imagePath;
@@ -201,25 +150,6 @@ const handleEditImageChange = (e: Event) => {
         editImagePreview.value = URL.createObjectURL(target.files[0]);
     }
 };
-
-const handleThumbnailChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files && target.files[0]) {
-        productForm.thumnail_img = target.files[0];
-        thumbnailPreview.value = URL.createObjectURL(target.files[0]);
-    }
-};
-
-const handleGalleryChange = (e: Event) => {
-    const target = e.target as HTMLInputElement;
-    if (target.files) {
-        productForm.gallary_img = Array.from(target.files);
-        galleryPreview.value = Array.from(target.files).map(file => URL.createObjectURL(file));
-    }
-};
-
-const thumbnailPreview = ref('');
-const galleryPreview = ref<string[]>([]);
 </script>
 <template>
     <div v-if="isLoading" class="loading-overlay">
@@ -276,17 +206,6 @@ const galleryPreview = ref<string[]>([]);
                                     <a-button type="link" @click="openEditModal(record)"><i
                                             class="fa fa-pencil-square-o text-s text-green-500"
                                             aria-hidden="true"></i></a-button>
-                                </a-tooltip>
-                                <a-tooltip placement="top">
-                                    <template #title> {{ translations.add_product || 'Add Product' }}</template>
-                                    <a-button type="link" @click="openProductModal(record)"><i
-                                            class="fa fa-product-hunt text-green-500" aria-hidden="true"></i></a-button>
-                                </a-tooltip>
-                                <a-tooltip placement="top">
-                                    <template #title> {{ translations.product_list || 'Product List' }}</template>
-                                    <Link :href="route('admin.related-product-list', record.slug)"
-                                        class="text-blue-500 hover:underline"><i class="fa fa-list text-slate-800"
-                                        aria-hidden="true"></i></Link>
                                 </a-tooltip>
                             </template>
                         </template>
@@ -387,138 +306,11 @@ const galleryPreview = ref<string[]>([]);
                 </div>
             </form>
         </a-modal>
-        <!-- Product Modal -->
-        <a-modal v-model:open="isproductModalVisible" :title="'Add Product for ' + selectedBrandName" @cancel="isproductModalVisible = false" :footer="null" width="800px">
-            <form @submit.prevent="saveProduct()" enctype="multipart/form-data">
-                <a-row :gutter="[16, 16]">
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Name <span class="text-red-500">*</span></label>
-                            <a-input v-model:value="productForm.name" class="mt-2 w-full" placeholder="Enter Product Name" />
-                            <div v-if="productForm.errors.name" class="text-red-500">{{ productForm.errors.name }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Barcode</label>
-                            <a-input v-model:value="productForm.barcode" class="mt-2 w-full" placeholder="Enter Barcode" />
-                            <div v-if="productForm.errors.barcode" class="text-red-500">{{ productForm.errors.barcode }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Category <span class="text-red-500">*</span></label>
-                            <a-select v-model:value="productForm.category_id" show-search placeholder="Select Category"
-                                class="mt-2 w-full" :options="categoryOptions" :filter-option="filterOption">
-                            </a-select>
-                            <div v-if="productForm.errors.category_id" class="text-red-500">{{ productForm.errors.category_id }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Status <span class="text-red-500">*</span></label>
-                            <a-select v-model:value="productForm.status" class="mt-2 w-full">
-                                <a-select-option value="active">Active</a-select-option>
-                                <a-select-option value="inactive">Inactive</a-select-option>
-                            </a-select>
-                            <div v-if="productForm.errors.status" class="text-red-500">{{ productForm.errors.status }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Purchase Price <span class="text-red-500">*</span></label>
-                            <a-input-number v-model:value="productForm.purchase_price" class="mt-2 w-full" :min="0" :step="0.01" />
-                            <div v-if="productForm.errors.purchase_price" class="text-red-500">{{ productForm.errors.purchase_price }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Sale Price <span class="text-red-500">*</span></label>
-                            <a-input-number v-model:value="productForm.sale_price" class="mt-2 w-full" :min="0" :step="0.01" />
-                            <div v-if="productForm.errors.sale_price" class="text-red-500">{{ productForm.errors.sale_price }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Discount (%)</label>
-                            <a-input-number v-model:value="productForm.discount" class="mt-2 w-full" :min="0" :max="100" :step="1" />
-                            <div v-if="productForm.errors.discount" class="text-red-500">{{ productForm.errors.discount }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Final Price</label>
-                            <a-input-number v-model:value="productForm.final_price" class="mt-2 w-full" :min="0" :step="0.01" disabled />
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Stock <span class="text-red-500">*</span></label>
-                            <a-input-number v-model:value="productForm.stock" class="mt-2 w-full" :min="0" />
-                            <div v-if="productForm.errors.stock" class="text-red-500">{{ productForm.errors.stock }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24">
-                        <div class="mb-4">
-                            <label class="block">Description <span class="text-red-500">*</span></label>
-                            <a-textarea v-model:value="productForm.description" class="mt-2 w-full" placeholder="Enter Description"
-                                :auto-size="{ minRows: 3, maxRows: 6 }" />
-                            <div v-if="productForm.errors.description" class="text-red-500">{{ productForm.errors.description }}</div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Thumbnail Image <span class="text-red-500">*</span></label>
-                            <input type="file" @change="handleThumbnailChange" accept="image/*" class="mt-2 w-full p-2 border rounded" />
-                            <div v-if="productForm.errors.thumnail_img" class="text-red-500">{{ productForm.errors.thumnail_img }}</div>
-                            <div v-if="thumbnailPreview" class="mt-2">
-                                <img :src="thumbnailPreview" alt="Thumbnail Preview" class="w-24 h-24 object-cover rounded border" />
-                            </div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24" :md="12">
-                        <div class="mb-4">
-                            <label class="block">Gallery Images <span class="text-red-500">*</span></label>
-                            <input type="file" @change="handleGalleryChange" accept="image/*" multiple class="mt-2 w-full p-2 border rounded" />
-                            <div v-if="productForm.errors.gallary_img" class="text-red-500">{{ productForm.errors.gallary_img }}</div>
-                            <div v-if="galleryPreview.length" class="mt-2 flex flex-wrap gap-2">
-                                <img v-for="(preview, index) in galleryPreview" :key="index" :src="preview" alt="Gallery Preview"
-                                    class="w-24 h-24 object-cover rounded border" />
-                            </div>
-                        </div>
-                    </a-col>
-
-                    <a-col :xs="24">
-                        <div class="mb-4">
-                            <a-checkbox v-model:checked="productForm.feature">Feature this product</a-checkbox>
-                        </div>
-                    </a-col>
-                </a-row>
-
-                <div class="text-right">
-                    <a-button type="default" @click="isproductModalVisible = false">Cancel</a-button>
-                    <a-button type="primary" html-type="submit" class="ml-2" :loading="isLoading">Save</a-button>
-                </div>
-            </form>
-        </a-modal>
-        <!-- Image Preview Modal -->
         <a-modal v-model:open="isImagePreviewModalVisible"   :title="translations.preview || 'Image Preview'"
             @cancel="isImagePreviewModalVisible = false" :footer="null" width="600px">
             <div class="flex justify-center p-4">
                 <img :src="previewImageUrl" alt="Full Size Image" class="max-w-full max-h-[500px] object-cover" />
             </div>
         </a-modal>
-
     </AdminLayout>
 </template>

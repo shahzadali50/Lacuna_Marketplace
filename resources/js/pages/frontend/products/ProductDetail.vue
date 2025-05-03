@@ -80,7 +80,7 @@ const decreaseQuantity = () => {
         <!-- Breadcrumb -->
 
         <section>
-            <div class="bg-gray-50 py-3">
+            <div class=" py-3">
                 <div class="container mx-auto px-4">
                 <div class="flex flex-wrap items-center text-sm text-gray-500">
                         <a href="/" class="hover:text-primary">Home</a>
